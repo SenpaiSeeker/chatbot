@@ -99,8 +99,8 @@ bot.on('message', ownerNotif(async (message) => {
     if (message.text.startsWith('/start')) {
         const markup = {
             inline_keyboard: [
-                [{ text: "Repository", url: "https://github.com/V1HyperBot/chatbot" }],
-                [{ text: "Credit", url: "https://t.me/NorSodikin" }],
+                [{ text: "Repository", url: "https://github.com/SenpaiSeeker/gemini-chatbot" }],
+                [{ text: "developer", url: "https://t.me/NorSodikin" }],
             ],
         };
         bot.sendMessage(
