@@ -96,7 +96,7 @@ bot.on('message', ownerNotif(async (message) => {
             markup
         );
     } else {
-        const msg = await bot.replyTo(message, "Silahkan tunggu...");
+        const msg = await bot.sendMessage(message.chat.id, "Silahkan tunggu...");
         try {
             const result = await googleAI(getText(message));
             await sendLargeOutput(message.chat.id, result, msg.message_id);
@@ -105,3 +105,7 @@ bot.on('message', ownerNotif(async (message) => {
         }
     }
 }));
+
+process.on('unhandledRejection', error => {
+    console.error('Unhandled Promise Rejection:', error);
+});
