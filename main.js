@@ -35,7 +35,8 @@ const googleAi = async (question) => {
     const response = await axios.post(url, payload, { headers: { 'Content-Type': 'application/json' } });
     return response.data.candidates[0].content.parts[0].text;
   } catch (error) {
-    return `Failed to generate content. Status code: ${error.response?.status || 'unknown'}`;
+    const statusCode = error.response ? error.response.status : 'unknown';
+    return `Failed to generate content. Status code: ${statusCode}`;
   }
 };
 
