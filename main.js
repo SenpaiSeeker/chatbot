@@ -50,11 +50,9 @@ const mention = (user) => {
 
 const escapeMarkdown = (text) => {
     return text
-        .replace(/([*_`\~\[\]\(\)])/g, '\\$1')
-        .replace(/\\\*/g, '*')
-        .replace(/\\\_/g, '_')
-        .replace(/\\\`/g, '`')
-        .replace(/\\\~/g, '~');
+        .replace(/([*_`\[\]~()])/g, '\\$1')
+        .replace(/\\\(/g, '(')
+        .replace(/\\\)/g, ')');
 };
 
 const formatText = (text) => {
