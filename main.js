@@ -94,7 +94,7 @@ bot.on('message', ownerNotif(async (message) => {
         };
         await bot.sendMessage(
             message.chat.id,
-            `**👋 Hai ${mention(message.from)} Perkenalkan saya ai google telegram bot. Dan saya adalah robot kecerdasan buatan dari ai.google.dev, dan saya siap menjawab pertanyaan yang Anda berikan**`,
+            md.render(`**👋 Hai ${mention(message.from)} Perkenalkan saya ai google telegram bot. Dan saya adalah robot kecerdasan buatan dari ai.google.dev, dan saya siap menjawab pertanyaan yang Anda berikan**`),
             { parse_mode: 'HTML', ...markup }
         );
     } else {
