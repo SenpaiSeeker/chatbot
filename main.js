@@ -21,7 +21,8 @@ const escapeMarkdownV2 = (text) => {
         .replace(/\!/g, '\\!')
         .replace(/\+/g, '\\+')
         .replace(/\-/g, '\\-')
-        .replace(/\./g, '\\.');
+        .replace(/\./g, '\\.')
+        .replace(/=/g, '\\=');
 };
 
 const getText = (message) => {
