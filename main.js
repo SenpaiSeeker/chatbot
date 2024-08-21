@@ -1,30 +1,21 @@
-require('dotenv').config();
 const axios = require('axios');
-const { Telegraf } = require('telegraf');
-const fs = require('fs');
+const dotenv = require('dotenv');
+const TelegramBot = require('node-telegram-bot-api');
+dotenv.config();
 
 const AI_GOOGLE_API = process.env.AI_GOOGLE_API;
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const OWNER_ID = parseInt(process.env.OWNER_ID);
 
-const bot = new Telegraf(BOT_TOKEN);
+const bot = new TelegramBot(BOT_TOKEN, { polling: true });
 
-const textTemplate = `
-user_id: {}
-name: {}
+const getText = (message) => {
+    const replyText = message.reply_to_message ? (message.reply_to_message.text || message.reply_to_message.caption) : "";
+    const userText = message.text;
+    return replyText && userText ? `${userText}\n\n${replyText}` : (replyText + userText);
+};
 
-msg: {}
-`;
-
-function getText(ctx) {
-    const replyText = ctx.message.reply_to_message
-        ? ctx.message.reply_to_message.text || ctx.message.reply_to_message.caption
-        : '';
-    const userText = ctx.message.text;
-    return replyText && userText ? `${userText}\n\n${replyText}` : replyText + userText;
-}
-
-async function googleAi(question) {
+const googleAI = async (question) => {
     if (!AI_GOOGLE_API) {
         return "Silakan periksa AI_GOOGLE_API Anda di file env";
     }
@@ -39,69 +30,69 @@ async function googleAi(question) {
             stopSequences: [],
         },
     };
-
     try {
-        const response = await axios.post(url, payload, {
-            headers: { 'Content-Type': 'application/json' }
-        });
-        return response.data.candidates[0].content.parts[0].text;
-    } catch (error) {
-        return `Failed to generate content. Status code: ${error.response.status}`;
-    }
-}
-
-function mention(user) {
-    const name = user.last_name ? `${user.first_name} ${user.last_name}` : user.first_name;
-    return `[${name}](tg://user?id=${user.id})`;
-}
-
-function sendLargeOutput(ctx, output) {
-    if (output.length <= 4000) {
-        ctx.reply(output);
-    } else {
-        fs.writeFileSync('result.txt', output);
-        ctx.replyWithDocument({ source: 'result.txt' });
-    }
-}
-
-function ownerNotif(ctx, next) {
-    if (ctx.from.id !== OWNER_ID) {
-        const link = ctx.from.username
-            ? `https://t.me/${ctx.from.username}`
-            : `tg://openmessage?user_id=${ctx.from.id}`;
-        ctx.telegram.sendMessage(OWNER_ID, ctx.message.text, {
-            reply_markup: {
-                inline_keyboard: [[{ text: 'link profil', url: link }]]
-            }
-        });
-    }
-    return next();
-}
-
-bot.use(ownerNotif);
-
-bot.start((ctx) => {
-    ctx.replyWithMarkdown(
-        `**👋 Hai ${mention(ctx.from)} Perkenalkan saya ai google telegram bot. Dan saya adalah robot kecerdasan buatan dari ai.google.dev, dan saya siap menjawab pertanyaan yang Anda berikan**`,
-        {
-            reply_markup: {
-                inline_keyboard: [
-                    [{ text: 'Repository', url: 'https://github.com/SenpaiSeeker/gemini-chatbot' }],
-                    [{ text: 'developer', url: 'https://t.me/NorSodikin' }],
-                ],
-            },
+        const response = await axios.post(url, payload, { headers: { "Content-Type": "application/json" } });
+        if (response.status === 200) {
+            return response.data.candidates[0].content.parts[0].text;
+        } else {
+            return `Failed to generate content. Status code: ${response.status}`;
         }
-    );
-});
-
-bot.on('text', async (ctx) => {
-    const msg = await ctx.reply('Silahkan tunggu...');
-    try {
-        const result = await googleAi(getText(ctx));
-        sendLargeOutput(ctx, result);
     } catch (error) {
-        ctx.telegram.editMessageText(ctx.chat.id, msg.message_id, null, String(error));
+        return `Request failed: ${error.message}`;
     }
-});
+};
 
-bot.launch();
+const mention = (user) => {
+    const name = user.last_name ? `${user.first_name} ${user.last_name}` : user.first_name;
+    const link = `tg://user?id=${user.id}`;
+    return `[${name}](${link})`;
+};
+
+const sendLargeOutput = (chatId, output, msgId) => {
+    if (output.length <= 4000) {
+        bot.sendMessage(chatId, output, { parse_mode: "Markdown" });
+    } else {
+        const outFile = Buffer.from(output, 'utf-8');
+        bot.sendDocument(chatId, outFile, {}, { filename: "result.txt" });
+    }
+    bot.deleteMessage(chatId, msgId);
+};
+
+const ownerNotif = (func) => {
+    return (message) => {
+        if (message.from.id !== OWNER_ID) {
+            const link = message.from.username
+                ? `https://t.me/${message.from.username}`
+                : `tg://openmessage?user_id=${message.from.id}`;
+            const markup = {
+                inline_keyboard: [[{ text: "link profil", url: link }]],
+            };
+            bot.sendMessage(OWNER_ID, message.text, { reply_markup: markup });
+        }
+        func(message);
+    };
+};
+
+bot.on('message', ownerNotif(async (message) => {
+    if (message.text.startsWith("/start")) {
+        const markup = {
+            inline_keyboard: [
+                [{ text: "Repository", url: "https://github.com/SenpaiSeeker/gemini-chatbot" }],
+                [{ text: "developer", url: "https://t.me/NorSodikin" }],
+            ],
+        };
+        bot.sendMessage(
+            message.chat.id,
+            `**👋 Hai ${mention(message.from)} Perkenalkan saya ai google telegram bot. Dan saya adalah robot kecerdasan buatan dari ai.google.dev, dan saya siap menjawab pertanyaan yang Anda berikan**`,
+            { parse_mode: "Markdown", reply_markup: markup }
+        );
+    } else {
+        const msg = await bot.sendMessage(message.chat.id, "Silahkan tunggu...");
+        try {
+            const result = await googleAI(getText(message));
+            sendLargeOutput(message.chat.id, result, msg.message_id);
+        } catch (error) {
+            bot.editMessageText(error.message, { chat_id: message.chat.id, message_id: msg.message_id });
+        }
+    }
+}));
