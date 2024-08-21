@@ -8,6 +8,13 @@ const OWNER_ID = parseInt(process.env.OWNER_ID, 10);
 
 const bot = new Bot(BOT_TOKEN);
 
+const escapeMarkdown = (text) => {
+  return text
+    .replace(/([_*\[\]()~`>#+\-=|{}.!])/g, '\\$1')
+    .replace(/(\d+)/g, '\\$1')
+    .replace(/(?:\r\n|\r|\n)/g, '\n');
+};
+
 const getText = (message) => {
   const replyText = message.reply_to_message ? (message.reply_to_message.text || message.reply_to_message.caption) : "";
   const userText = message.text || "";
@@ -47,10 +54,12 @@ const mention = (user) => {
 };
 
 const sendLargeOutput = async (chatId, output, msgId) => {
-  if (output.length <= 4000) {
-    await bot.api.sendMessage(chatId, output, { parse_mode: 'Markdown' });
+  const escapedOutput = escapeMarkdown(output);
+
+  if (escapedOutput.length <= 4000) {
+    await bot.api.sendMessage(chatId, escapedOutput, { parse_mode: 'MarkdownV2' });
   } else {
-    await bot.api.sendDocument(chatId, { source: Buffer.from(output), filename: 'result.txt' });
+    await bot.api.sendDocument(chatId, { source: Buffer.from(escapedOutput), filename: 'result.txt' });
   }
   await bot.api.deleteMessage(chatId, msgId);
 };
