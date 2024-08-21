@@ -48,8 +48,17 @@ const mention = (user) => {
     return `[${name}](${link})`;
 };
 
-const formatText = (text) => {
+const escapeMarkdown = (text) => {
     return text
+        .replace(/([*_`\~\[\]\(\)])/g, '\\$1')
+        .replace(/\\\*/g, '*')
+        .replace(/\\\_/g, '_')
+        .replace(/\\\`/g, '`')
+        .replace(/\\\~/g, '~');
+};
+
+const formatText = (text) => {
+    return escapeMarkdown(text)
         .replace(/\*\*(.*?)\*\*/g, '**$1**')
         .replace(/`([^`]*)`/g, '`$1`')
         .replace(/~~(.*?)~~/g, '~~$1~~')
