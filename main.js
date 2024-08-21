@@ -58,7 +58,7 @@ function mention(user) {
 
 async function sendLargeOutput(chatId, output, msgId) {
     if (output.length <= 4000) {
-        await bot.sendMessage(chatId, output);
+        await bot.sendMessage(chatId, output, { parse_mode: 'HTML' });
     } else {
         await bot.sendDocument(chatId, { source: Buffer.from(output), filename: 'result.txt' });
     }
@@ -94,8 +94,8 @@ bot.on('message', ownerNotif(async (message) => {
         };
         await bot.sendMessage(
             message.chat.id,
-            md.render(`**👋 Hai ${mention(message.from)} Perkenalkan saya ai google telegram bot. Dan saya adalah robot kecerdasan buatan dari ai.google.dev, dan saya siap menjawab pertanyaan yang Anda berikan**`),
-            markup
+            `**👋 Hai ${mention(message.from)} Perkenalkan saya ai google telegram bot. Dan saya adalah robot kecerdasan buatan dari ai.google.dev, dan saya siap menjawab pertanyaan yang Anda berikan**`,
+            { parse_mode: 'HTML', ...markup }
         );
     } else {
         const msg = await bot.sendMessage(message.chat.id, "Silahkan tunggu...");
