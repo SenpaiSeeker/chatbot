@@ -9,9 +9,18 @@ const OWNER_ID = parseInt(process.env.OWNER_ID, 10);
 const bot = new Bot(BOT_TOKEN);
 
 const escapeMarkdown = (text) => {
-  return text
-    .replace(/([_*[\]()~`>#+\-=|{}.!])/g, '\\$1')
-    .replace(/(?:\r\n|\r|\n)/g, '\n');
+  const safeText = text
+        .replace(/_/g, '\\_')
+        .replace(/\*/g, '\\*')
+        .replace(/\[/g, '\\[')
+        .replace(/`/g, '\\`')
+        .replace(/~/g, '\\~');
+
+    return safeText
+        .replace(/\*\*(.*?)\*\*/g, '**$1**')
+        .replace(/`([^`]*)`/g, '`$1`')
+        .replace(/~~(.*?)~~/g, '~~$1~~')
+        .replace(/```([^```]*)```/g, '```$1```');
 };
 
 const getText = (message) => {
