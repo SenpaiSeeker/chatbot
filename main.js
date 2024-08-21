@@ -50,7 +50,7 @@ const mention = (user) => {
 
 const sanitizeMarkdownV2 = (text) => {
     return text
-        .replace(/([*_~`\[\]()>#+\-.!])/g, '\\$1')
+        .replace(/([*_~`\[\]()>#+\-.!|])/g, '\\$1')
         .replace(/([^\x00-\x7F])/g, '\\u$1');
 };
 
