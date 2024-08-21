@@ -48,11 +48,16 @@ const mention = (user) => {
     return `[${name}](${link})`;
 };
 
+const sanitizeMarkdown = (text) => {
+    return text.replace(/([*_~`])/g, '\\$1');
+};
+
 const sendLargeOutput = (chatId, output, msgId) => {
-    if (output.length <= 4000) {
-        bot.sendMessage(chatId, output, { parse_mode: "Markdown" });
+    const sanitizedOutput = sanitizeMarkdown(output);
+    if (sanitizedOutput.length <= 4000) {
+        bot.sendMessage(chatId, sanitizedOutput, { parse_mode: "MarkdownV2" });
     } else {
-        const outFile = Buffer.from(output, 'utf-8');
+        const outFile = Buffer.from(sanitizedOutput, 'utf-8');
         bot.sendDocument(chatId, outFile, {}, { filename: "result.txt" });
     }
     bot.deleteMessage(chatId, msgId);
