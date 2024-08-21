@@ -1,59 +1,48 @@
 const TelegramBot = require('node-telegram-bot-api');
-const axios = require('axios');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 require('dotenv').config();
+const { Readable } = require('stream');
 
-const AI_GOOGLE_API = process.env.AI_GOOGLE_API;
+const API_KEY = process.env.AI_GOOGLE_API;
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const OWNER_ID = parseInt(process.env.OWNER_ID, 10);
 
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
 
-const escapeMarkdownV2 = (text) => {
-    return text
-        .replace(/_/g, '\\_')
-        .replace(/\*/g, '\\*')
-        .replace(/\[/g, '\\[')
-        .replace(/\]/g, '\\]')
-        .replace(/\(/g, '\\(')
-        .replace(/\)/g, '\\)')
-        .replace(/\~/g, '\\~')
-        .replace(/\`/g, '\\`')
-        .replace(/\!/g, '\\!')
-        .replace(/\+/g, '\\+')
-        .replace(/\-/g, '\\-')
-        .replace(/\./g, '\\.')
-        .replace(/=/g, '\\=')
-        .replace(/\|/g, '\\|');
+const genAI = new GoogleGenerativeAI(API_KEY);
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+const generationConfig = {
+    temperature: 1,
+    topP: 0.95,
+    topK: 64,
+    maxOutputTokens: 8192,
+    responseMimeType: "text/plain",
 };
 
 const getText = (message) => {
-    const replyText = message.reply_to_message ? (message.reply_to_message.text || message.reply_to_message.caption) : '';
-    const userText = message.text || '';
-    return replyText && userText ? `${userText}\n\n${replyText}` : replyText + userText;
+    const replyText = message.reply_to_message ? 
+        (message.reply_to_message.text || message.reply_to_message.caption || "") : 
+        "";
+    const userText = message.text || "";
+    return `${userText}\n\n${replyText}`.trim() || replyText || userText;
 };
 
 const googleAI = async (question) => {
-    if (!AI_GOOGLE_API) {
-        return 'Silakan periksa AI_GOOGLE_API Anda di file env';
+    if (!API_KEY) {
+        return "Silakan periksa AI_GOOGLE_API Anda di file env";
     }
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${AI_GOOGLE_API}`;
-    const payload = {
-        contents: [{ role: 'user', parts: [{ text: question }] }],
-        generationConfig: {
-            temperature: 1,
-            topK: 0,
-            topP: 0.95,
-            maxOutputTokens: 8192,
-            stopSequences: [],
-        },
-    };
+    const chatSession = model.startChat({
+        generationConfig,
+        history: [],
+    });
 
     try {
-        const response = await axios.post(url, payload, { headers: { 'Content-Type': 'application/json' } });
-        return response.data.candidates[0].content.parts[0].text;
+        const result = await chatSession.sendMessage(question);
+        return result.response.text();
     } catch (error) {
-        return `Failed to generate content. Status code: ${error.response ? error.response.status : error.message}`;
+        return `Failed to generate content. Error: ${error.message}`;
     }
 };
 
@@ -63,64 +52,56 @@ const mention = (user) => {
     return `[${name}](${link})`;
 };
 
-const sendLargeOutput = async (chatId, output, messageId) => {
-    const escapedOutput = escapeMarkdownV2(output);
-
-    if (escapedOutput.length <= 4000) {
-        await bot.sendMessage(chatId, escapedOutput, { parse_mode: 'MarkdownV2' });
-    } else {
-        await bot.sendDocument(chatId, Buffer.from(escapedOutput), { caption: 'result.txt' });
-    }
-    await bot.deleteMessage(chatId, messageId);
+const createStream = (content) => {
+    const stream = new Readable();
+    stream._read = () => {};
+    stream.push(content);
+    stream.push(null);
+    return stream;
 };
 
-const ownerNotif = (handler) => async (message) => {
+const sendLargeOutput = async (chatId, output, msgId) => {
+    const outFile = createStream(output);
+    await bot.sendDocument(chatId, outFile, {}, { filename: "result.txt" });
+    await bot.deleteMessage(chatId, msgId);
+};
+
+const ownerNotif = (func) => async (message) => {
     if (message.from.id !== OWNER_ID) {
-        const link = message.from.username 
-            ? `https://t.me/${message.from.username}` 
-            : `tg://openmessage?user_id=${message.from.id}`;
-        
+        const link = message.from.username ?
+            `https://t.me/${message.from.username}` :
+            `tg://openmessage?user_id=${message.from.id}`;
         const markup = {
-            reply_markup: {
-                inline_keyboard: [[{ text: 'Link Profil', url: link }]],
-            },
+            inline_keyboard: [[{ text: "link profil", url: link }]]
         };
-        
-        await bot.sendMessage(OWNER_ID, message.text, markup);
+        await bot.sendMessage(OWNER_ID, message.text, { reply_markup: markup });
     }
-    await handler(message);
+    return func(message);
 };
 
-bot.on('message', ownerNotif(async (message) => {
-    if (message.text.startsWith('/start')) {
+bot.onText(/.*/, ownerNotif(async (message) => {
+    if (message.text.startsWith("/start")) {
         const markup = {
-            reply_markup: {
-                inline_keyboard: [
-                    [{ text: 'Repository', url: 'https://github.com/SenpaiSeeker/gemini-chatbot' }],
-                    [{ text: 'Developer', url: 'https://t.me/NorSodikin' }],
-                ],
-            },
+            inline_keyboard: [
+                [{ text: "Repository", url: "https://github.com/SenpaiSeeker/gemini-chatbot" }],
+                [{ text: "developer", url: "https://t.me/NorSodikin" }]
+            ]
         };
-        try {
-            await bot.sendMessage(
-                message.chat.id,
-                `**👋 Hai ${mention(message.from)} Perkenalkan saya ai google telegram bot. Dan saya adalah robot kecerdasan buatan dari ai.google.dev, dan saya siap menjawab pertanyaan yang Anda berikan**`,
-                { parse_mode: 'MarkdownV2', reply_markup: markup }
-            );
-        } catch (error) {
-            console.error(`Error sending start message: ${error.message}`);
-        }
+        await bot.sendMessage(
+            message.chat.id,
+            `**👋 Hai ${mention(message.from)} Perkenalkan saya ai google telegram bot. Dan saya adalah robot kecerdasan buatan dari ai.google.dev, dan saya siap menjawab pertanyaan yang Anda berikan**`,
+            { reply_markup: markup, parse_mode: 'MarkdownV2' }
+        );
     } else {
-        const msg = await bot.replyTo(message, 'Silahkan tunggu...').catch(error => console.error(`Error replying to message: ${error.message}`));
+        const msg = await bot.replyTo(message, "Silahkan tunggu...");
         try {
             const result = await googleAI(getText(message));
-            await sendLargeOutput(message.chat.id, result, msg.message_id);
+            await bot.editMessageText("Processing...", { chat_id: message.chat.id, message_id: msg.message_id });
+            const outputStream = createStream(result);
+            await bot.sendDocument(message.chat.id, outputStream, {}, { filename: "result.txt" });
+            await bot.deleteMessage(message.chat.id, msg.message_id);
         } catch (error) {
-            await bot.editMessageText(`Error: ${error.message}`, { chat_id: message.chat.id, message_id: msg.message_id, parse_mode: 'MarkdownV2' }).catch(err => console.error(`Error editing message text: ${err.message}`));
+            await bot.editMessageText(error.toString(), { chat_id: message.chat.id, message_id: msg.message_id });
         }
     }
 }));
-
-process.on('unhandledRejection', error => {
-    console.error('Unhandled Promise Rejection:', error.message);
-});
