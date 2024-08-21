@@ -8,6 +8,22 @@ const OWNER_ID = parseInt(process.env.OWNER_ID, 10);
 
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
 
+const escapeMarkdownV2 = (text) => {
+    return text
+        .replace(/_/g, '\\_')
+        .replace(/\*/g, '\\*')
+        .replace(/\[/g, '\\[')
+        .replace(/\]/g, '\\]')
+        .replace(/\(/g, '\\(')
+        .replace(/\)/g, '\\)')
+        .replace(/\~/g, '\\~')
+        .replace(/\`/g, '\\`')
+        .replace(/\!/g, '\\!')
+        .replace(/\+/g, '\\+')
+        .replace(/\-/g, '\\-')
+        .replace(/\./g, '\\.');
+};
+
 const getText = (message) => {
     const replyText = message.reply_to_message ? (message.reply_to_message.text || message.reply_to_message.caption) : '';
     const userText = message.text || '';
@@ -46,10 +62,12 @@ const mention = (user) => {
 };
 
 const sendLargeOutput = async (chatId, output, messageId) => {
-    if (output.length <= 4000) {
-        await bot.sendMessage(chatId, output, { parse_mode: 'MarkdownV2' });
+    const escapedOutput = escapeMarkdownV2(output);
+
+    if (escapedOutput.length <= 4000) {
+        await bot.sendMessage(chatId, escapedOutput, { parse_mode: 'MarkdownV2' });
     } else {
-        await bot.sendDocument(chatId, Buffer.from(output), { caption: 'result.txt' });
+        await bot.sendDocument(chatId, Buffer.from(escapedOutput), { caption: 'result.txt' });
     }
     await bot.deleteMessage(chatId, messageId);
 };
@@ -81,18 +99,26 @@ bot.on('message', ownerNotif(async (message) => {
                 ],
             },
         };
-        await bot.sendMessage(
-            message.chat.id,
-            `**👋 Hai ${mention(message.from)} Perkenalkan saya ai google telegram bot. Dan saya adalah robot kecerdasan buatan dari ai.google.dev, dan saya siap menjawab pertanyaan yang Anda berikan**`,
-            { parse_mode: 'MarkdownV2', reply_markup: markup }
-        );
+        try {
+            await bot.sendMessage(
+                message.chat.id,
+                escapeMarkdownV2(`**👋 Hai ${mention(message.from)} Perkenalkan saya ai google telegram bot. Dan saya adalah robot kecerdasan buatan dari ai.google.dev, dan saya siap menjawab pertanyaan yang Anda berikan**`),
+                { parse_mode: 'MarkdownV2', reply_markup: markup }
+            );
+        } catch (error) {
+            console.error(`Error sending start message: ${error.message}`);
+        }
     } else {
-        const msg = await bot.replyTo(message, 'Silahkan tunggu...');
+        const msg = await bot.replyTo(message, 'Silahkan tunggu...').catch(error => console.error(`Error replying to message: ${error.message}`));
         try {
             const result = await googleAI(getText(message));
             await sendLargeOutput(message.chat.id, result, msg.message_id);
         } catch (error) {
-            await bot.editMessageText(`Error: ${error.message}`, { chat_id: message.chat.id, message_id: msg.message_id, parse_mode: 'MarkdownV2' });
+            await bot.editMessageText(`Error: ${error.message}`, { chat_id: message.chat.id, message_id: msg.message_id, parse_mode: 'MarkdownV2' }).catch(err => console.error(`Error editing message text: ${err.message}`));
         }
     }
 }));
+
+process.on('unhandledRejection', error => {
+    console.error('Unhandled Promise Rejection:', error.message);
+});
