@@ -48,14 +48,9 @@ const mention = (user) => {
     return `[${name}](${link})`;
 };
 
-const escapeMarkdown = (text) => {
-    return text
-        .replace(/([_*`~\\\[\]()#\-\|])/g, '\\$1');
-};
-
 const formatText = (text) => {
-    return escapeMarkdown(text)
-        .replace(/(\*\*.*?\*\*)/g, '**$1**')
+    return text
+        .replace(/\*\*(.*?)\*\*/g, '**$1**')
         .replace(/`([^`]*)`/g, '`$1`')
         .replace(/~~(.*?)~~/g, '~~$1~~')
         .replace(/```([^```]*)```/g, '```$1```');
@@ -63,7 +58,7 @@ const formatText = (text) => {
 
 const sendLargeOutput = (chatId, output, msgId) => {
     const formattedOutput = formatText(output);
-    const parseMode = "MarkdownV2";
+    const parseMode = "Markdown";
     if (formattedOutput.length <= 4000) {
         bot.sendMessage(chatId, formattedOutput, { parse_mode: parseMode });
     } else {
