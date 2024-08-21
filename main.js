@@ -48,16 +48,18 @@ const mention = (user) => {
     return `[${name}](${link})`;
 };
 
-const formatText = (text) => {
-    const safeText = text
-        .replace(/_/g, '\\_')
-        .replace(/\*/g, '\\*')
+const escapeMarkdown = (text) => {
+    return text
+        .replace(/(\*|_|`|~)/g, '\\$1')
         .replace(/\[/g, '\\[')
-        .replace(/`/g, '\\`')
-        .replace(/~/g, '\\~');
+        .replace(/\]/g, '\\]')
+        .replace(/\(/g, '\\(')
+        .replace(/\)/g, '\\)');
+};
 
-    return safeText
-        .replace(/\*\*(.*?)\*\*/g, '**$1**')
+const formatText = (text) => {
+    return escapeMarkdown(text)
+        .replace(/(\*\*.*?\*\*)/g, '**$1**')
         .replace(/`([^`]*)`/g, '`$1`')
         .replace(/~~(.*?)~~/g, '~~$1~~')
         .replace(/```([^```]*)```/g, '```$1```');
@@ -65,7 +67,7 @@ const formatText = (text) => {
 
 const sendLargeOutput = (chatId, output, msgId) => {
     const formattedOutput = formatText(output);
-    const parseMode = "Markdown";
+    const parseMode = "MarkdownV2";
     if (formattedOutput.length <= 4000) {
         bot.sendMessage(chatId, formattedOutput, { parse_mode: parseMode });
     } else {
@@ -74,7 +76,6 @@ const sendLargeOutput = (chatId, output, msgId) => {
     }
     bot.deleteMessage(chatId, msgId);
 };
-
 
 const ownerNotif = (func) => {
     return (message) => {
