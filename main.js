@@ -49,7 +49,14 @@ const mention = (user) => {
 };
 
 const formatText = (text) => {
-    return text
+    const safeText = text
+        .replace(/_/g, '\\_')
+        .replace(/\*/g, '\\*')
+        .replace(/\[/g, '\\[')
+        .replace(/`/g, '\\`')
+        .replace(/~/g, '\\~');
+
+    return safeText
         .replace(/\*\*(.*?)\*\*/g, '**$1**')
         .replace(/`([^`]*)`/g, '`$1`')
         .replace(/~~(.*?)~~/g, '~~$1~~')
@@ -67,6 +74,7 @@ const sendLargeOutput = (chatId, output, msgId) => {
     }
     bot.deleteMessage(chatId, msgId);
 };
+
 
 const ownerNotif = (func) => {
     return (message) => {
