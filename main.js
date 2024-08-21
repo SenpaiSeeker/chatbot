@@ -1,8 +1,8 @@
-const { Bot, InputFile } = require('tgbot');
+const { createBot, InputFile } = require('tgbot');
 const axios = require('axios');
 require('dotenv').config();
 
-const bot = new Bot(process.env.BOT_TOKEN);
+const bot = createBot(process.env.BOT_TOKEN);
 const ownerId = parseInt(process.env.OWNER_ID, 10);
 
 const AI_GOOGLE_API = process.env.AI_GOOGLE_API;
@@ -110,4 +110,4 @@ bot.on('message', ownerNotif(async (message) => {
     }
 }));
 
-bot.run();
+bot.start();
