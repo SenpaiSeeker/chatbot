@@ -10,8 +10,7 @@ const bot = new Bot(BOT_TOKEN);
 
 const escapeMarkdown = (text) => {
   return text
-    .replace(/([_*\[\]()~`>#+\-=|{}.!])/g, '\\$1')
-    .replace(/(\d+)/g, '\\$1')
+    .replace(/([_*[\]()~`>#+\-=|{}.!])/g, '\\$1')
     .replace(/(?:\r\n|\r|\n)/g, '\n');
 };
 
