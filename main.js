@@ -58,21 +58,17 @@ const escapeMarkdown = (text) => {
 };
 
 const formatText = (text) => {
-    let formatted = escapeMarkdown(text)
+    return escapeMarkdown(text)
         .replace(/\*\*(.*?)\*\*/g, '**$1**')
         .replace(/`([^`]*)`/g, '`$1`')
         .replace(/~~(.*?)~~/g, '~~$1~~')
         .replace(/```([^```]*)```/g, '```$1```');
-
-    formatted = formatted.replace(/([*_`\~\[\]\(\)])/g, '\\$1');
-    return formatted;
 };
 
 const sendLargeOutput = (chatId, output, msgId) => {
     const formattedOutput = formatText(output);
     const parseMode = "Markdown";
-
-    if (formattedOutput.length <= 4000) {
+    if (formattedOutput.length <= 4096) {
         bot.sendMessage(chatId, formattedOutput, { parse_mode: parseMode });
     } else {
         const outFile = Buffer.from(formattedOutput, 'utf-8');
