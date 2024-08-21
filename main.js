@@ -93,7 +93,7 @@ bot.onText(/.*/, ownerNotif(async (message) => {
             { reply_markup: markup, parse_mode: 'MarkdownV2' }
         );
     } else {
-        const msg = await bot.replyTo(message, "Silahkan tunggu...");
+        const msg = await bot.sendMessage(message.chat.id, "Silahkan tunggu...");
         try {
             const result = await googleAI(getText(message));
             await bot.editMessageText("Processing...", { chat_id: message.chat.id, message_id: msg.message_id });
