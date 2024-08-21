@@ -84,7 +84,8 @@ bot.on('message', ownerNotif(async (ctx) => {
   if (message.text.startsWith("/start")) {
     await bot.api.sendMessage(
       message.chat.id,
-      `**👋 Hai ${mention(message.from)} Perkenalkan saya ai google telegram bot. Dan saya adalah robot kecerdasan buatan dari ai.google.dev, dan saya siap menjawab pertanyaan yang Anda berikan**`,
+      escapeMarkdown(`**👋 Hai ${mention(message.from)} Perkenalkan saya ai google telegram bot. Dan saya adalah robot kecerdasan buatan dari ai.google.dev, dan saya siap menjawab pertanyaan yang Anda berikan**`),
+      { parse_mode: 'MarkdownV2' }
       {
         reply_markup: {
           inline_keyboard: [
