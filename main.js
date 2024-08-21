@@ -1,5 +1,6 @@
 const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
+const MarkdownIt = require('markdown-it');
 require('dotenv').config();
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
@@ -7,6 +8,7 @@ const OWNER_ID = parseInt(process.env.OWNER_ID);
 const AI_GOOGLE_API = process.env.AI_GOOGLE_API;
 
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
+const md = new MarkdownIt();
 
 function getText(message) {
     const replyText = message.reply_to_message ? (message.reply_to_message.text || message.reply_to_message.caption || '') : '';
@@ -56,7 +58,7 @@ function mention(user) {
 
 async function sendLargeOutput(chatId, output, msgId) {
     if (output.length <= 4000) {
-        await bot.sendMessage(chatId, output, { parse_mode: 'MarkdownV2' });
+        await bot.sendMessage(chatId, output);
     } else {
         await bot.sendDocument(chatId, { source: Buffer.from(output), filename: 'result.txt' });
     }
@@ -92,13 +94,14 @@ bot.on('message', ownerNotif(async (message) => {
         };
         await bot.sendMessage(
             message.chat.id,
-            `**👋 Hai ${mention(message.from)} Perkenalkan saya ai google telegram bot. Dan saya adalah robot kecerdasan buatan dari ai.google.dev, dan saya siap menjawab pertanyaan yang Anda berikan**`,
-            { parse_mode: 'MarkdownV2', ...markup }
+            md.render(`**👋 Hai ${mention(message.from)} Perkenalkan saya ai google telegram bot. Dan saya adalah robot kecerdasan buatan dari ai.google.dev, dan saya siap menjawab pertanyaan yang Anda berikan**`),
+            markup
         );
     } else {
         const msg = await bot.sendMessage(message.chat.id, "Silahkan tunggu...");
         try {
-            const result = await googleAI(getText(message));
+            let result = await googleAI(getText(message));
+            result = md.render(result);
             await sendLargeOutput(message.chat.id, result, msg.message_id);
         } catch (error) {
             await bot.editMessageText(`Error: ${error.message}`, { chat_id: message.chat.id, message_id: msg.message_id });
