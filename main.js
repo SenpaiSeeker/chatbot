@@ -1,18 +1,29 @@
-const { Bot, InlineKeyboard } = require('grammy');
+const { Client, Message } = require('pyrogram');
 const axios = require('axios');
 require('dotenv').config();
 
 const AI_GOOGLE_API = process.env.AI_GOOGLE_API;
+const API_ID = parseInt(process.env.API_ID);
+const API_HASH = process.env.API_HASH;
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const OWNER_ID = parseInt(process.env.OWNER_ID);
 
-const bot = new Bot(BOT_TOKEN);
+const bot = new Client('my_bot', {
+  apiId: API_ID,
+  apiHash: API_HASH,
+  botToken: BOT_TOKEN
+});
 
-const getText = (ctx) => {
-  const replyText = ctx.message.reply_to_message
-    ? (ctx.message.reply_to_message.text || ctx.message.reply_to_message.caption)
-    : '';
-  const userText = ctx.message.text;
+const textTemplate = `
+user_id: {userId}
+name: {name}
+
+msg: {msg}
+`;
+
+const getText = (message) => {
+  const replyText = message.reply_to_message ? (message.reply_to_message.text || message.reply_to_message.caption) : '';
+  const userText = message.text;
   return replyText && userText ? `${userText}\n\n${replyText}` : replyText + userText;
 };
 
@@ -54,52 +65,55 @@ const mention = (user) => {
   return `[${name}](${link})`;
 };
 
-const sendLargeOutput = async (ctx, output, msg) => {
+const sendLargeOutput = async (chatId, output, msgId) => {
   if (output.length <= 4000) {
-    await ctx.api.editMessageText(ctx.chat.id, msg.message_id, output, { parse_mode: 'Markdown' });
+    await bot.sendMessage(chatId, output, { parse_mode: 'Markdown' });
   } else {
-    await ctx.replyWithDocument(
-      { source: Buffer.from(output), filename: 'result.txt' },
-      { reply_to_message_id: msg.message_id }
+    await bot.sendDocument(chatId, { source: Buffer.from(output), filename: 'result.txt' });
+  }
+  await bot.deleteMessage(chatId, msgId);
+};
+
+const ownerNotif = (func) => {
+  return async (message) => {
+    if (message.from.id !== OWNER_ID) {
+      const link = message.from.username
+        ? `https://t.me/${message.from.username}`
+        : `tg://openmessage?user_id=${message.from.id}`;
+
+      const markup = {
+        inline_keyboard: [[{ text: 'Link profil', url: link }]]
+      };
+
+      await bot.sendMessage(OWNER_ID, message.text, { reply_markup: markup });
+    }
+    await func(message);
+  };
+};
+
+bot.on('message', ownerNotif(async (message) => {
+  if (message.text.startsWith('/start')) {
+    const markup = {
+      inline_keyboard: [
+        [{ text: 'Repository', url: 'https://github.com/SenpaiSeeker/gemini-chatbot' }],
+        [{ text: 'Developer', url: 'https://t.me/NorSodikin' }],
+      ],
+    };
+
+    await bot.sendMessage(
+      message.chat.id,
+      `**👋 Hai ${mention(message.from)} Perkenalkan saya AI Google Telegram bot. Saya adalah robot kecerdasan buatan dari ai.google.dev, dan saya siap menjawab pertanyaan yang Anda berikan**`,
+      { reply_markup: markup, parse_mode: 'Markdown' }
     );
+  } else {
+    const msg = await bot.sendMessage(message.chat.id, 'Silahkan tunggu...');
+    try {
+      const result = await googleAI(getText(message));
+      await sendLargeOutput(message.chat.id, result, msg.message_id);
+    } catch (error) {
+      await bot.editMessageText(error.message, { chat_id: message.chat.id, message_id: msg.message_id });
+    }
   }
-  await ctx.api.deleteMessage(ctx.chat.id, msg.message_id);
-};
-
-const ownerNotif = (next) => async (ctx) => {
-  if (ctx.from.id !== OWNER_ID) {
-    const link = ctx.from.username
-      ? `https://t.me/${ctx.from.username}`
-      : `tg://openmessage?user_id=${ctx.from.id}`;
-
-    const keyboard = new InlineKeyboard().url('Link profil', link);
-
-    await bot.api.sendMessage(OWNER_ID, ctx.message.text, { reply_markup: keyboard });
-  }
-  await next(ctx);
-};
-
-bot.use(ownerNotif);
-
-bot.command('start', async (ctx) => {
-  const keyboard = new InlineKeyboard()
-    .url('Repository', 'https://github.com/SenpaiSeeker/gemini-chatbot')
-    .url('Developer', 'https://t.me/NorSodikin');
-
-  await ctx.reply(
-    `**👋 Hai ${mention(ctx.from)} Perkenalkan saya AI Google Telegram bot. Saya adalah robot kecerdasan buatan dari ai.google.dev, dan saya siap menjawab pertanyaan yang Anda berikan**`,
-    { reply_markup: keyboard, parse_mode: 'Markdown' }
-  );
-});
-
-bot.on('message', async (ctx) => {
-  const msg = await ctx.reply('Silahkan tunggu...');
-  try {
-    const result = await googleAI(getText(ctx));
-    await sendLargeOutput(ctx, result, msg);
-  } catch (error) {
-    await ctx.api.editMessageText(ctx.chat.id, msg.message_id, error.message);
-  }
-});
+}));
 
 bot.start();
