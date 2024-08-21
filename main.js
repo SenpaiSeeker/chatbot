@@ -87,7 +87,7 @@ bot.on('message', ownerNotif(async (ctx) => {
       message.chat.id,
       escapeMarkdown(startMessage),
       {
-        parse_mode: 'MarkdownV2',
+        parse_mode: 'Markdown',
         reply_markup: {
           inline_keyboard: [
             [{ text: 'Repository', url: 'https://github.com/SenpaiSeeker/gemini-chatbot' }],
