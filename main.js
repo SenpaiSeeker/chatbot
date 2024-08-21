@@ -58,16 +58,20 @@ const escapeMarkdown = (text) => {
 };
 
 const formatText = (text) => {
-    return escapeMarkdown(text)
+    let formatted = escapeMarkdown(text)
         .replace(/\*\*(.*?)\*\*/g, '**$1**')
         .replace(/`([^`]*)`/g, '`$1`')
         .replace(/~~(.*?)~~/g, '~~$1~~')
         .replace(/```([^```]*)```/g, '```$1```');
+
+    formatted = formatted.replace(/([*_`\~\[\]\(\)])/g, '\\$1');
+    return formatted;
 };
 
 const sendLargeOutput = (chatId, output, msgId) => {
     const formattedOutput = formatText(output);
-    const parseMode = "MarkdownV2";
+    const parseMode = "Markdown";
+
     if (formattedOutput.length <= 4000) {
         bot.sendMessage(chatId, formattedOutput, { parse_mode: parseMode });
     } else {
@@ -103,7 +107,7 @@ bot.on('message', ownerNotif(async (message) => {
         bot.sendMessage(
             message.chat.id,
             `**👋 Hai ${mention(message.from)} Perkenalkan saya ai google telegram bot. Dan saya adalah robot kecerdasan buatan dari ai.google.dev, dan saya siap menjawab pertanyaan yang Anda berikan**`,
-            { parse_mode: "MarkdownV2", reply_markup: markup }
+            { parse_mode: "Markdown", reply_markup: markup }
         );
     } else {
         const msg = await bot.sendMessage(message.chat.id, "Silahkan tunggu...");
