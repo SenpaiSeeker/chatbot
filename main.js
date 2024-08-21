@@ -82,11 +82,12 @@ const ownerNotif = (handler) => {
 bot.on('message', ownerNotif(async (ctx) => {
   const message = ctx.message;
   if (message.text.startsWith("/start")) {
+    const startMessage = `**👋 Hai ${mention(message.from)} Perkenalkan saya ai google telegram bot. Dan saya adalah robot kecerdasan buatan dari ai.google.dev, dan saya siap menjawab pertanyaan yang Anda berikan**`;
     await bot.api.sendMessage(
       message.chat.id,
-      escapeMarkdown(`**👋 Hai ${mention(message.from)} Perkenalkan saya ai google telegram bot. Dan saya adalah robot kecerdasan buatan dari ai.google.dev, dan saya siap menjawab pertanyaan yang Anda berikan**`),
-      { parse_mode: 'MarkdownV2' },
+      escapeMarkdown(startMessage),
       {
+        parse_mode: 'MarkdownV2',
         reply_markup: {
           inline_keyboard: [
             [{ text: 'Repository', url: 'https://github.com/SenpaiSeeker/gemini-chatbot' }],
@@ -101,7 +102,7 @@ bot.on('message', ownerNotif(async (ctx) => {
       const result = await googleAi(getText(message));
       await sendLargeOutput(message.chat.id, result, msg.message_id);
     } catch (error) {
-      await bot.api.editMessageText(message.chat.id, msg.message_id, error.toString());
+      await bot.api.editMessageText(message.chat.id, msg.message_id, escapeMarkdown(error.toString()));
     }
   }
 }));
