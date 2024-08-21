@@ -12,7 +12,9 @@ const escapeMarkdown = (text) => {
 };
 
 const getText = (message) => {
-    const replyText = message.reply_to_message?.text || message.reply_to_message?.caption || '';
+    const replyText = (message.reply_to_message && message.reply_to_message.text) 
+        || (message.reply_to_message && message.reply_to_message.caption) 
+        || '';
     const userText = message.text || '';
     return replyText && userText ? `${userText}\n\n${replyText}` : replyText + userText;
 };
@@ -45,7 +47,7 @@ const googleAi = async (question) => {
             return `Failed to generate content. Status code: ${response.status}`;
         }
     } catch (error) {
-        return `Failed to generate content. Status code: ${error.response?.status || 'unknown'}`;
+        return `Failed to generate content. Status code: ${error.response ? error.response.status : 'unknown'}`;
     }
 };
 
