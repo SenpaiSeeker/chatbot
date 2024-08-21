@@ -48,7 +48,7 @@ const mention = (user) => {
 
 const sendLargeOutput = async (chatId, output, msgId) => {
   if (output.length <= 4000) {
-    await bot.api.sendMessage(chatId, output, { parse_mode: 'MarkdownV2' });
+    await bot.api.sendMessage(chatId, output, { parse_mode: 'Markdown' });
   } else {
     await bot.api.sendDocument(chatId, { source: Buffer.from(output), filename: 'result.txt' });
   }
