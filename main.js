@@ -2,6 +2,7 @@ const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
+const translate = require('translate-google');
 require('dotenv').config();
 
 const AI_GOOGLE_API = process.env.AI_GOOGLE_API;
@@ -9,22 +10,6 @@ const BOT_TOKEN = process.env.BOT_TOKEN;
 const OWNER_ID = parseInt(process.env.OWNER_ID);
 
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
-
-const translateToIndonesian = async (text) => {
-    const url = 'https://libretranslate.de/translate';
-    const payload = {
-        q: text,
-        source: 'en',
-        target: 'id',
-        format: 'text'
-    };
-    try {
-        const response = await axios.post(url, payload);
-        return response.data.translatedText;
-    } catch (error) {
-        return `Gagal menerjemahkan teks. Error: ${error.message}`;
-    }
-};
 
 const getText = (message) => {
     const replyText = message.reply_to_message ? (message.reply_to_message.text || message.reply_to_message.caption) : '';
@@ -50,6 +35,15 @@ const googleAI = async (question) => {
         return response.data.candidates[0].content.parts[0].text;
     } catch (error) {
         return `Failed to generate content. Status code: ${error.response ? error.response.status : 'unknown'}`;
+    }
+};
+
+const translateToIndonesian = async (text) => {
+    try {
+        const translated = await translate(text, { to: 'id' });
+        return translated.text;
+    } catch (error) {
+        return `Terjemahan gagal: ${error.message}`;
     }
 };
 
@@ -100,7 +94,6 @@ bot.on('message', async (message) => {
         const msg = await bot.sendMessage(message.chat.id, 'Silahkan tunggu...');
         try {
             let result = await googleAI(getText(message));
-            // Terjemahkan hasil ke bahasa Indonesia
             result = await translateToIndonesian(result);
             await sendLargeOutput(message.chat.id, result, msg.message_id);
         } catch (error) {
