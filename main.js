@@ -1,6 +1,5 @@
 const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
-const translate = require('translate-google-api');
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
@@ -10,6 +9,22 @@ const BOT_TOKEN = process.env.BOT_TOKEN;
 const OWNER_ID = parseInt(process.env.OWNER_ID);
 
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
+
+const translateToIndonesian = async (text) => {
+    const url = 'https://libretranslate.de/translate';
+    const payload = {
+        q: text,
+        source: 'en',
+        target: 'id',
+        format: 'text'
+    };
+    try {
+        const response = await axios.post(url, payload);
+        return response.data.translatedText;
+    } catch (error) {
+        return `Gagal menerjemahkan teks. Error: ${error.message}`;
+    }
+};
 
 const getText = (message) => {
     const replyText = message.reply_to_message ? (message.reply_to_message.text || message.reply_to_message.caption) : '';
@@ -35,15 +50,6 @@ const googleAI = async (question) => {
         return response.data.candidates[0].content.parts[0].text;
     } catch (error) {
         return `Failed to generate content. Status code: ${error.response ? error.response.status : 'unknown'}`;
-    }
-};
-
-const translateToIndonesian = async (text) => {
-    try {
-        const res = await translate(text, { to: 'id' });
-        return res.text;
-    } catch (error) {
-        return `Translation error: ${error.message}`;
     }
 };
 
@@ -93,9 +99,10 @@ bot.on('message', async (message) => {
     } else {
         const msg = await bot.sendMessage(message.chat.id, 'Silahkan tunggu...');
         try {
-            const result = await googleAI(getText(message));
-            const translatedResult = await translateToIndonesian(result);
-            await sendLargeOutput(message.chat.id, translatedResult, msg.message_id);
+            let result = await googleAI(getText(message));
+            // Terjemahkan hasil ke bahasa Indonesia
+            result = await translateToIndonesian(result);
+            await sendLargeOutput(message.chat.id, result, msg.message_id);
         } catch (error) {
             bot.editMessageText(`${error}`, message.chat.id, msg.message_id);
         }
