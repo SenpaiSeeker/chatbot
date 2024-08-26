@@ -2,25 +2,23 @@ const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
 require('dotenv').config();
 
-const token = process.env.BOT_TOKEN;
-const aiGoogleApi = process.env.AI_GOOGLE_API;
-const ownerId = parseInt(process.env.OWNER_ID, 10);
+const AI_GOOGLE_API = process.env.AI_GOOGLE_API;
+const BOT_TOKEN = process.env.BOT_TOKEN;
+const OWNER_ID = parseInt(process.env.OWNER_ID);
 
-const bot = new TelegramBot(token, { polling: true });
+const bot = new TelegramBot(BOT_TOKEN, { polling: true });
 
 const getText = (message) => {
-    const replyText = (message.reply_to_message && (message.reply_to_message.text || message.reply_to_message.caption)) || '';
-    const userText = message.text || '';
-    return replyText && userText ? `${userText}\n\n${replyText}` : replyText + userText;
+    const replyText = message.reply_to_message ? (message.reply_to_message.text || message.reply_to_message.caption) : '';
+    const userText = message.text;
+    return replyText && userText ? `${userText}\n\n${replyText}` : (replyText + userText);
 };
 
-const googleAi = async (question) => {
-    if (!aiGoogleApi) {
-        return 'Silakan periksa AI_GOOGLE_API Anda di file env';
-    }
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${aiGoogleApi}`;
+const googleAI = async (question) => {
+    if (!AI_GOOGLE_API) return "Silakan periksa AI_GOOGLE_API Anda di file env";
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${AI_GOOGLE_API}`;
     const payload = {
-        contents: [{ role: 'user', parts: [{ text: question }] }],
+        contents: [{ role: "user", parts: [{ text: question }] }],
         generationConfig: {
             temperature: 1,
             topK: 0,
@@ -45,31 +43,27 @@ const mention = (user) => {
 
 const sendLargeOutput = async (chatId, output, msgId) => {
     if (output.length <= 4000) {
-        await bot.sendMessage(chatId, output, { parse_mode: 'HTML' });
+        bot.sendMessage(chatId, output, { parse_mode: 'Markdown' });
     } else {
-        await bot.sendDocument(chatId, Buffer.from(output, 'utf-8'), { filename: 'result.txt' });
+        const fileOptions = { filename: 'result.txt', content: output };
+        bot.sendDocument(chatId, fileOptions);
     }
-    await bot.deleteMessage(chatId, msgId);
+    bot.deleteMessage(chatId, msgId);
 };
 
-const ownerNotif = (func) => {
-    return async (message) => {
-        if (message.from.id !== ownerId) {
-            const link = message.from.username 
-                ? `https://t.me/${message.from.username}`
-                : `tg://openmessage?user_id=${message.from.id}`;
-            const markup = {
-                inline_keyboard: [[
-                    { text: 'Link Profil', url: link }
-                ]]
-            };
-            await bot.sendMessage(ownerId, message.text, { reply_markup: JSON.stringify(markup) });
-        }
-        return func(message);
-    };
+const ownerNotif = (message) => {
+    if (message.from.id !== OWNER_ID) {
+        const link = message.from.username ? `https://t.me/${message.from.username}` : `tg://openmessage?user_id=${message.from.id}`;
+        const markup = {
+            inline_keyboard: [[{ text: 'link profil', url: link }]]
+        };
+        bot.sendMessage(OWNER_ID, message.text, { reply_markup: JSON.stringify(markup) });
+    }
 };
 
-bot.on('message', ownerNotif(async (message) => {
+bot.on('message', async (message) => {
+    ownerNotif(message);
+
     if (message.text.startsWith('/start')) {
         const markup = {
             inline_keyboard: [
@@ -77,7 +71,7 @@ bot.on('message', ownerNotif(async (message) => {
                 [{ text: 'Credit', url: 'https://t.me/NorSodikin' }]
             ]
         };
-        await bot.sendMessage(
+        bot.sendMessage(
             message.chat.id,
             `**👋 Hai ${mention(message.from)} Perkenalkan saya ai google telegram bot. Dan saya adalah robot kecerdasan buatan dari ai.google.dev, dan saya siap menjawab pertanyaan yang Anda berikan**`,
             { parse_mode: 'Markdown', reply_markup: JSON.stringify(markup) }
@@ -85,10 +79,10 @@ bot.on('message', ownerNotif(async (message) => {
     } else {
         const msg = await bot.replyTo(message, 'Silahkan tunggu...');
         try {
-            const result = await googleAi(getText(message));
+            const result = await googleAI(getText(message));
             await sendLargeOutput(message.chat.id, result, msg.message_id);
         } catch (error) {
-            await bot.editMessageText(error.message, { chat_id: message.chat.id, message_id: msg.message_id });
+            bot.editMessageText(`${error}`, message.chat.id, msg.message_id);
         }
     }
-}));
+});
