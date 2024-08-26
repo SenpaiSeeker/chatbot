@@ -41,12 +41,19 @@ const mention = (user) => {
     return `[${name}](${link})`;
 };
 
+const fs = require('fs');
+const path = require('path');
+
 const sendLargeOutput = async (chatId, output, msgId) => {
     if (output.length <= 4000) {
         bot.sendMessage(chatId, output, { parse_mode: 'Markdown' });
     } else {
-        const fileOptions = { filename: 'result.txt', content: output };
-        bot.sendDocument(chatId, fileOptions);
+        const filePath = path.join(__dirname, 'result.txt');
+        fs.writeFileSync(filePath, output);
+
+        await bot.sendDocument(chatId, filePath, {}, { filename: 'result.txt' });
+
+        fs.unlinkSync(filePath);
     }
     bot.deleteMessage(chatId, msgId);
 };
