@@ -1,10 +1,14 @@
 const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
+const fs = require('fs');
+const path = require('path');
+const { Translate } = require('@google-cloud/translate').v2;
 require('dotenv').config();
 
 const AI_GOOGLE_API = process.env.AI_GOOGLE_API;
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const OWNER_ID = parseInt(process.env.OWNER_ID);
+const translate = new Translate();
 
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
 
@@ -35,14 +39,20 @@ const googleAI = async (question) => {
     }
 };
 
+const translateText = async (text) => {
+    try {
+        const [translation] = await translate.translate(text, 'id');
+        return translation;
+    } catch (error) {
+        return `Failed to translate text. Error: ${error.message}`;
+    }
+};
+
 const mention = (user) => {
     const name = user.last_name ? `${user.first_name} ${user.last_name}` : user.first_name;
     const link = `tg://user?id=${user.id}`;
     return `[${name}](${link})`;
 };
-
-const fs = require('fs');
-const path = require('path');
 
 const sendLargeOutput = async (chatId, output, msgId) => {
     if (output.length <= 4000) {
@@ -87,7 +97,8 @@ bot.on('message', async (message) => {
         const msg = await bot.sendMessage(message.chat.id, 'Silahkan tunggu...');
         try {
             const result = await googleAI(getText(message));
-            await sendLargeOutput(message.chat.id, result, msg.message_id);
+            const translatedResult = await translateText(result);
+            await sendLargeOutput(message.chat.id, translatedResult, msg.message_id);
         } catch (error) {
             bot.editMessageText(`${error}`, message.chat.id, msg.message_id);
         }
