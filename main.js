@@ -1,14 +1,13 @@
 const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
+const translate = require('google-translate-api');
 const fs = require('fs');
 const path = require('path');
-const { Translate } = require('@google-cloud/translate').v2;
 require('dotenv').config();
 
 const AI_GOOGLE_API = process.env.AI_GOOGLE_API;
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const OWNER_ID = parseInt(process.env.OWNER_ID);
-const translate = new Translate();
 
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
 
@@ -39,12 +38,12 @@ const googleAI = async (question) => {
     }
 };
 
-const translateText = async (text) => {
+const translateToIndonesian = async (text) => {
     try {
-        const [translation] = await translate.translate(text, 'id');
-        return translation;
+        const res = await translate(text, { to: 'id' });
+        return res.text;
     } catch (error) {
-        return `Failed to translate text. Error: ${error.message}`;
+        return `Translation error: ${error.message}`;
     }
 };
 
@@ -58,11 +57,14 @@ const sendLargeOutput = async (chatId, output, msgId) => {
     if (output.length <= 4000) {
         bot.sendMessage(chatId, output, { parse_mode: 'Markdown' });
     } else {
+        // Simpan output ke file sementara
         const filePath = path.join(__dirname, 'result.txt');
         fs.writeFileSync(filePath, output);
 
+        // Kirim file
         await bot.sendDocument(chatId, filePath, {}, { filename: 'result.txt' });
 
+        // Hapus file setelah dikirim
         fs.unlinkSync(filePath);
     }
     bot.deleteMessage(chatId, msgId);
@@ -97,7 +99,7 @@ bot.on('message', async (message) => {
         const msg = await bot.sendMessage(message.chat.id, 'Silahkan tunggu...');
         try {
             const result = await googleAI(getText(message));
-            const translatedResult = await translateText(result);
+            const translatedResult = await translateToIndonesian(result);
             await sendLargeOutput(message.chat.id, translatedResult, msg.message_id);
         } catch (error) {
             bot.editMessageText(`${error}`, message.chat.id, msg.message_id);
