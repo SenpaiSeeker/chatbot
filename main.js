@@ -16,7 +16,7 @@ const getText = (message) => {
 
 const googleAI = async (question) => {
     if (!AI_GOOGLE_API) return "Silakan periksa AI_GOOGLE_API Anda di file env";
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${AI_GOOGLE_API}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${AI_GOOGLE_API}`;
     const payload = {
         contents: [{ role: "user", parts: [{ text: question }] }],
         generationConfig: {
