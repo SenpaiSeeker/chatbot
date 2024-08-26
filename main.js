@@ -1,6 +1,6 @@
 const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
-const translate = require('google-translate-api');
+const translate = require('@vitalets/google-translate-api');
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
@@ -57,14 +57,11 @@ const sendLargeOutput = async (chatId, output, msgId) => {
     if (output.length <= 4000) {
         bot.sendMessage(chatId, output, { parse_mode: 'Markdown' });
     } else {
-        // Simpan output ke file sementara
         const filePath = path.join(__dirname, 'result.txt');
         fs.writeFileSync(filePath, output);
 
-        // Kirim file
         await bot.sendDocument(chatId, filePath, {}, { filename: 'result.txt' });
 
-        // Hapus file setelah dikirim
         fs.unlinkSync(filePath);
     }
     bot.deleteMessage(chatId, msgId);
