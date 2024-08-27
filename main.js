@@ -1,11 +1,9 @@
 const TelegramBot = require('node-telegram-bot-api');
-const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
-const translate = require('@vitalets/google-translate-api');
 require('dotenv').config();
+const gpt4free = require('gpt4free');
 
-const AI_GOOGLE_API = process.env.AI_GOOGLE_API;
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const OWNER_ID = parseInt(process.env.OWNER_ID);
 
@@ -17,33 +15,12 @@ const getText = (message) => {
     return replyText && userText ? `${userText}\n\n${replyText}` : (replyText + userText);
 };
 
-const googleAI = async (question) => {
-    if (!AI_GOOGLE_API) return "Silakan periksa AI_GOOGLE_API Anda di file env";
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${AI_GOOGLE_API}`;
-    const payload = {
-        contents: [{ role: "user", parts: [{ text: question }] }],
-        generationConfig: {
-            temperature: 1,
-            topK: 0,
-            topP: 0.95,
-            maxOutputTokens: 8192,
-            stopSequences: [],
-        },
-    };
+const gptAi = async (question) => {
     try {
-        const response = await axios.post(url, payload, { headers: { 'Content-Type': 'application/json' } });
-        return response.data.candidates[0].content.parts[0].text;
+        const response = await gpt4free.getCompletion(question, { language: 'id' });
+        return response;
     } catch (error) {
-        return `Failed to generate content. Status code: ${error.response ? error.response.status : 'unknown'}`;
-    }
-};
-
-const translateToIndonesian = async (text) => {
-    try {
-        const res = await translate(text, { to: 'id' });
-        return res.text;
-    } catch (error) {
-        return `Failed to translate text. Error: ${error.message}`;
+        return `Gagal menghasilkan konten. Kode status: ${error.response ? error.response.status : 'tidak diketahui'}`;
     }
 };
 
@@ -93,10 +70,7 @@ bot.on('message', async (message) => {
     } else {
         const msg = await bot.sendMessage(message.chat.id, 'Silahkan tunggu...');
         try {
-            let result = await googleAI(getText(message));
-            if (result.match(/^[a-zA-Z\s]*$/)) {
-                result = await translateToIndonesian(result);
-            }
+            let result = await gptAi(getText(message));
             await sendLargeOutput(message.chat.id, result, msg.message_id);
         } catch (error) {
             bot.editMessageText(`${error}`, message.chat.id, msg.message_id);
