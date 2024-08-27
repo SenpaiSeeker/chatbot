@@ -1,9 +1,10 @@
 const TelegramBot = require('node-telegram-bot-api');
+const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
-const gpt4free = require('gpt4free');
 
+const AI_GOOGLE_API = process.env.AI_GOOGLE_API;
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const OWNER_ID = parseInt(process.env.OWNER_ID);
 
@@ -15,12 +16,24 @@ const getText = (message) => {
     return replyText && userText ? `${userText}\n\n${replyText}` : (replyText + userText);
 };
 
-const gptAi = async (question) => {
+const googleAI = async (question) => {
+    if (!AI_GOOGLE_API) return "Silakan periksa AI_GOOGLE_API Anda di file env";
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${AI_GOOGLE_API}`;
+    const payload = {
+        contents: [{ role: "user", parts: [{ text: question }] }],
+        generationConfig: {
+            temperature: 1,
+            topK: 0,
+            topP: 0.95,
+            maxOutputTokens: 8192,
+            stopSequences: [],
+        },
+    };
     try {
-        const response = await gpt4free.getCompletion(question);
-        return response;
+        const response = await axios.post(url, payload, { headers: { 'Content-Type': 'application/json' } });
+        return response.data.candidates[0].content.parts[0].text;
     } catch (error) {
-        return `Gagal menghasilkan konten. Kode status: ${error.response ? error.response.status : 'tidak diketahui'}`;
+        return `Failed to generate content. Status code: ${error.response ? error.response.status : 'unknown'}`;
     }
 };
 
@@ -42,35 +55,22 @@ const sendLargeOutput = async (chatId, output, msgId) => {
     bot.deleteMessage(chatId, msgId);
 };
 
-const ownerNotif = (message) => {
-    if (message.from.id !== OWNER_ID) {
-        const link = message.from.username ? `https://t.me/${message.from.username}` : `tg://openmessage?user_id=${message.from.id}`;
-        const markup = {
-            inline_keyboard: [[{ text: 'link profil', url: link }]]
-        };
-        bot.sendMessage(OWNER_ID, message.text, { reply_markup: JSON.stringify(markup) });
-    }
-};
-
 bot.on('message', async (message) => {
-    ownerNotif(message);
-
     if (message.text.startsWith('/start')) {
         const markup = {
             inline_keyboard: [
-                [{ text: 'Repository', url: 'https://github.com/DreamBoxs/ai-telegram-bot' }],
-                [{ text: 'Credit', url: 'https://t.me/NorSodikin' }]
+                [{ text: 'developer', url: 'https://t.me/NorSodikin' }]
             ]
         };
         bot.sendMessage(
             message.chat.id,
-            `**👋 Hai ${mention(message.from)} Perkenalkan saya ai google telegram bot. Dan saya adalah robot kecerdasan buatan dari ai.google.dev, dan saya siap menjawab pertanyaan yang Anda berikan**`,
+            `**👋 Hai ${mention(message.from)} Perkenalkan saya ai google telegram bot berbasis program javascript. Dan saya adalah robot kecerdasan buatan dari ai.google.dev, dan saya siap menjawab pertanyaan yang Anda berikan**`,
             { parse_mode: 'Markdown', reply_markup: JSON.stringify(markup) }
         );
     } else {
         const msg = await bot.sendMessage(message.chat.id, 'Silahkan tunggu...');
         try {
-            let result = await gptAi(getText(message));
+            const result = await googleAI(getText(message));
             await sendLargeOutput(message.chat.id, result, msg.message_id);
         } catch (error) {
             bot.editMessageText(`${error}`, message.chat.id, msg.message_id);
