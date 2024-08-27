@@ -1,8 +1,5 @@
 const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
-const fs = require('fs');
-const path = require('path');
-const translate = require('translate-google');
 require('dotenv').config();
 
 const AI_GOOGLE_API = process.env.AI_GOOGLE_API;
@@ -32,18 +29,25 @@ const googleAI = async (question) => {
     };
     try {
         const response = await axios.post(url, payload, { headers: { 'Content-Type': 'application/json' } });
-        return response.data.candidates[0].content.parts[0].text;
+        let result = response.data.candidates[0].content.parts[0].text;
+        
+        const isEnglish = /^[a-zA-Z0-9\s.,!?'"()]+$/.test(result);
+        if (isEnglish) {
+            result = await translateToIndonesian(result);
+        }
+        return result;
     } catch (error) {
-        return `Failed to generate content. Status code: ${error.response ? error.response.status : 'unknown'}`;
+        return `Gagal membuat konten. Kode status: ${error.response ? error.response.status : 'unknown'}`;
     }
 };
 
 const translateToIndonesian = async (text) => {
+    const translateUrl = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=id&dt=t&q=' + encodeURIComponent(text);
     try {
-        const translated = await translate(text, { to: 'id' });
-        return translated.text;
+        const response = await axios.get(translateUrl);
+        return response.data[0][0][0];
     } catch (error) {
-        return `Terjemahan gagal: ${error.message}`;
+        return text; 
     }
 };
 
@@ -93,8 +97,7 @@ bot.on('message', async (message) => {
     } else {
         const msg = await bot.sendMessage(message.chat.id, 'Silahkan tunggu...');
         try {
-            let result = await googleAI(getText(message));
-            result = await translateToIndonesian(result);
+            const result = await googleAI(getText(message));
             await sendLargeOutput(message.chat.id, result, msg.message_id);
         } catch (error) {
             bot.editMessageText(`${error}`, message.chat.id, msg.message_id);
