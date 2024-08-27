@@ -1,5 +1,7 @@
 const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
+const fs = require('fs');
+const path = require('path');
 require('dotenv').config();
 
 const AI_GOOGLE_API = process.env.AI_GOOGLE_API;
@@ -7,6 +9,10 @@ const BOT_TOKEN = process.env.BOT_TOKEN;
 const OWNER_ID = parseInt(process.env.OWNER_ID);
 
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
+
+const escapeMarkdown = (text) => {
+    return text.replace(/([_*\[\]()~`>#+\-=|{}.!])/g, '\\$1');
+};
 
 const getText = (message) => {
     const replyText = message.reply_to_message ? (message.reply_to_message.text || message.reply_to_message.caption) : '';
@@ -35,17 +41,23 @@ const googleAI = async (question) => {
         if (isEnglish) {
             result = await translateToIndonesian(result);
         }
-        return result;
+        return escapeMarkdown(result);
     } catch (error) {
         return `Gagal membuat konten. Kode status: ${error.response ? error.response.status : 'unknown'}`;
     }
 };
 
 const translateToIndonesian = async (text) => {
-    const translateUrl = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=id&dt=t&q=' + encodeURIComponent(text);
+    const translateUrl = 'https://libretranslate.de/translate';
+    const payload = {
+        q: text,
+        source: 'en',
+        target: 'id',
+        format: 'text'
+    };
     try {
-        const response = await axios.get(translateUrl);
-        return response.data[0][0][0];
+        const response = await axios.post(translateUrl, payload, { headers: { 'Content-Type': 'application/json' } });
+        return response.data.translatedText;
     } catch (error) {
         return text; 
     }
@@ -54,7 +66,7 @@ const translateToIndonesian = async (text) => {
 const mention = (user) => {
     const name = user.last_name ? `${user.first_name} ${user.last_name}` : user.first_name;
     const link = `tg://user?id=${user.id}`;
-    return `[${name}](${link})`;
+    return `[${escapeMarkdown(name)}](${link})`;
 };
 
 const sendLargeOutput = async (chatId, output, msgId) => {
