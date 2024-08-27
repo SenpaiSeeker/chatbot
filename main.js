@@ -10,10 +10,6 @@ const OWNER_ID = parseInt(process.env.OWNER_ID);
 
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
 
-const escapeMarkdown = (text) => {
-    return text.replace(/([_*\[\]()~`>#+\-=|{}.!])/g, '\\$1');
-};
-
 const getText = (message) => {
     const replyText = message.reply_to_message ? (message.reply_to_message.text || message.reply_to_message.caption) : '';
     const userText = message.text;
@@ -36,37 +32,26 @@ const googleAI = async (question) => {
     try {
         const response = await axios.post(url, payload, { headers: { 'Content-Type': 'application/json' } });
         let result = response.data.candidates[0].content.parts[0].text;
-        
-        const isEnglish = /^[a-zA-Z0-9\s.,!?'"()]+$/.test(result);
-        if (isEnglish) {
-            result = await translateToIndonesian(result);
-        }
-        return escapeMarkdown(result);
+        return await translateToIndonesian(result);
     } catch (error) {
-        return `Gagal membuat konten. Kode status: ${error.response ? error.response.status : 'unknown'}`;
+        return `Failed to generate content. Status code: ${error.response ? error.response.status : 'unknown'}`;
     }
 };
 
 const translateToIndonesian = async (text) => {
-    const translateUrl = 'https://libretranslate.de/translate';
-    const payload = {
-        q: text,
-        source: 'en',
-        target: 'id',
-        format: 'text'
-    };
+    const translateUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|id`;
     try {
-        const response = await axios.post(translateUrl, payload, { headers: { 'Content-Type': 'application/json' } });
-        return response.data.translatedText;
+        const response = await axios.get(translateUrl);
+        return response.data.responseData.translatedText || text;
     } catch (error) {
-        return text; 
+        return text;
     }
 };
 
 const mention = (user) => {
     const name = user.last_name ? `${user.first_name} ${user.last_name}` : user.first_name;
     const link = `tg://user?id=${user.id}`;
-    return `[${escapeMarkdown(name)}](${link})`;
+    return `[${name}](${link})`;
 };
 
 const sendLargeOutput = async (chatId, output, msgId) => {
