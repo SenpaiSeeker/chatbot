@@ -89,7 +89,7 @@ bot.on('message', async (message) => {
         bot.sendMessage(
             message.chat.id,
             `**👋 Hai ${mention(message.from)} Perkenalkan saya ai google telegram bot berbasis program javascript. Dan saya adalah robot kecerdasan buatan dari ai.google.dev, dan saya siap menjawab pertanyaan yang Anda berikan**`,
-            { parse_mode: 'Markdown', reply_markup: JSON.stringify(markup) }
+            { parse_mode: 'MarkdownV2', reply_markup: JSON.stringify(markup) }
         );
         logger.info('Mengirim pesan selamat datang');
     } else {
