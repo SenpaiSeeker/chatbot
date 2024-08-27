@@ -64,7 +64,7 @@ const mention = (user) => {
 const sendLargeOutput = async (chatId, output, msgId) => {
     logger.info('Mengirim output besar ke pengguna');
     if (output.length <= 4000) {
-        bot.sendMessage(chatId, output, { parse_mode: 'Markdown' });
+        bot.sendMessage(chatId, output, { parse_mode: 'MarkdownV2' });
     } else {
         const filePath = path.join(__dirname, 'result.txt');
         fs.writeFileSync(filePath, output);
