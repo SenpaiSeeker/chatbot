@@ -31,23 +31,24 @@ const googleAI = async (question) => {
     };
     try {
         const response = await axios.post(url, payload, { headers: { 'Content-Type': 'application/json' } });
-        let output = response.data.candidates[0].content.parts[0].text;
-        if (output.match(/[a-zA-Z]/)) {
-            output = await translateToIndonesian(output);
-        }
-        return output;
+        return response.data.candidates[0].content.parts[0].text;
     } catch (error) {
         return `Failed to generate content. Status code: ${error.response ? error.response.status : 'unknown'}`;
     }
 };
 
 const translateToIndonesian = async (text) => {
-    const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|id`;
+    const translateUrl = `https://translation.googleapis.com/language/translate/v2?key=${AI_GOOGLE_API}`;
+    const payload = {
+        q: text,
+        target: 'id',
+        format: 'text'
+    };
     try {
-        const response = await axios.get(url);
-        return response.data.responseData.translatedText;
+        const response = await axios.post(translateUrl, payload, { headers: { 'Content-Type': 'application/json' } });
+        return response.data.data.translations[0].translatedText;
     } catch (error) {
-        return text;
+        return `Failed to translate text. Status code: ${error.response ? error.response.status : 'unknown'}`;
     }
 };
 
@@ -97,7 +98,8 @@ bot.on('message', async (message) => {
     } else {
         const msg = await bot.sendMessage(message.chat.id, 'Silahkan tunggu...');
         try {
-            const result = await googleAI(getText(message));
+            let result = await googleAI(getText(message));
+            result = await translateToIndonesian(result);
             await sendLargeOutput(message.chat.id, result, msg.message_id);
         } catch (error) {
             bot.editMessageText(`${error}`, message.chat.id, msg.message_id);
