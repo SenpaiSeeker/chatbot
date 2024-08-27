@@ -17,7 +17,7 @@ const getText = (message) => {
 
 const gptAi = async (question) => {
     try {
-        const response = await gpt4free.getCompletion(question, { language: 'id' });
+        const response = await gpt4free.getCompletion(question);
         return response;
     } catch (error) {
         return `Gagal menghasilkan konten. Kode status: ${error.response ? error.response.status : 'tidak diketahui'}`;
