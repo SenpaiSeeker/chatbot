@@ -2,6 +2,7 @@ const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
+const translate = require('@vitalets/google-translate-api');
 require('dotenv').config();
 
 const AI_GOOGLE_API = process.env.AI_GOOGLE_API;
@@ -38,17 +39,11 @@ const googleAI = async (question) => {
 };
 
 const translateToIndonesian = async (text) => {
-    const translateUrl = `https://translation.googleapis.com/language/translate/v2?key=${AI_GOOGLE_API}`;
-    const payload = {
-        q: text,
-        target: 'id',
-        format: 'text'
-    };
     try {
-        const response = await axios.post(translateUrl, payload, { headers: { 'Content-Type': 'application/json' } });
-        return response.data.data.translations[0].translatedText;
+        const res = await translate(text, { to: 'id' });
+        return res.text;
     } catch (error) {
-        return `Failed to translate text. Status code: ${error.response ? error.response.status : 'unknown'}`;
+        return `Failed to translate text. Error: ${error.message}`;
     }
 };
 
@@ -99,7 +94,9 @@ bot.on('message', async (message) => {
         const msg = await bot.sendMessage(message.chat.id, 'Silahkan tunggu...');
         try {
             let result = await googleAI(getText(message));
-            result = await translateToIndonesian(result);
+            if (result.match(/^[a-zA-Z\s]*$/)) {
+                result = await translateToIndonesian(result);
+            }
             await sendLargeOutput(message.chat.id, result, msg.message_id);
         } catch (error) {
             bot.editMessageText(`${error}`, message.chat.id, msg.message_id);
