@@ -31,18 +31,21 @@ const googleAI = async (question) => {
     };
     try {
         const response = await axios.post(url, payload, { headers: { 'Content-Type': 'application/json' } });
-        let result = response.data.candidates[0].content.parts[0].text;
-        return await translateToIndonesian(result);
+        let output = response.data.candidates[0].content.parts[0].text;
+        if (output.match(/[a-zA-Z]/)) {
+            output = await translateToIndonesian(output);
+        }
+        return output;
     } catch (error) {
         return `Failed to generate content. Status code: ${error.response ? error.response.status : 'unknown'}`;
     }
 };
 
 const translateToIndonesian = async (text) => {
-    const translateUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|id`;
+    const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|id`;
     try {
-        const response = await axios.get(translateUrl);
-        return response.data.responseData.translatedText || text;
+        const response = await axios.get(url);
+        return response.data.responseData.translatedText;
     } catch (error) {
         return text;
     }
