@@ -63,7 +63,7 @@ const mention = (user) => {
     return `[${name}](${link})`;
 };
 
-const sendLargeOutput = async (chatId, output, msgId) => {
+const sendLargeOutput = async (chatId, output) => {
     logger.info('Mengirim output besar ke pengguna');
     if (output.length <= 4000) {
         bot.sendMessage(chatId, output);
@@ -75,8 +75,6 @@ const sendLargeOutput = async (chatId, output, msgId) => {
 
         fs.unlinkSync(filePath);
     }
-    bot.deleteMessage(chatId, msgId);
-    logger.info('Pesan berhasil dikirim dan dihapus');
 };
 
 bot.on('message', async (message) => {
@@ -95,12 +93,12 @@ bot.on('message', async (message) => {
         );
         logger.info('Mengirim pesan selamat datang');
     } else {
-        const msg = await bot.sendMessage(message.chat.id, 'Silahkan tunggu...');
+        await bot.sendChatAction(message.chat.id, 'typing');
         try {
             const result = await NoLimitApi(getText(message));
-            await sendLargeOutput(message.chat.id, result, msg.message_id);
+            await sendLargeOutput(message.chat.id, result);
         } catch (error) {
-            bot.editMessageText(`${error}`, message.chat.id, msg.message_id);
+            bot.sendMessage(message.chat.id, '${error}`);
             logger.error(`Terjadi kesalahan: ${error.message}`);
         }
     }
