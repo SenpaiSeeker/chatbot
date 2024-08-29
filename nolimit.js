@@ -49,7 +49,7 @@ const NoLimitApi = async (question) => {
         if (typeof result === 'object') {
             return JSON.stringify(result, null, 2)
         } else {
-            return result.message;
+            return result;
         }
     } catch (error) {
         logger.error(`Gagal mendapatkan respons dari API nolimit-next: ${error.message}`);
