@@ -98,7 +98,7 @@ bot.on('message', async (message) => {
             const result = await NoLimitApi(getText(message));
             await sendLargeOutput(message.chat.id, result);
         } catch (error) {
-            bot.sendMessage(message.chat.id, '${error}`);
+            bot.sendMessage(message.chat.id, `${error}`);
             logger.error(`Terjadi kesalahan: ${error.message}`);
         }
     }
