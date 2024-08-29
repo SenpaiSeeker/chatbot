@@ -44,7 +44,7 @@ const NoLimitApi = async (question) => {
         const response = await axios.post(url, data, { headers });
         logger.info('Berhasil mendapatkan respons dari API nolimit-next');
 
-        const result = response.data;
+        const result = response.data.message;
         
         if (typeof result === 'object') {
             return JSON.stringify(result, null, 2)
