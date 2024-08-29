@@ -20,7 +20,6 @@ const logger = winston.createLogger({
 
 const AI_GOOGLE_API = process.env.AI_GOOGLE_API;
 const BOT_TOKEN = process.env.BOT_TOKEN;
-const OWNER_ID = parseInt(process.env.OWNER_ID);
 
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
 
