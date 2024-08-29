@@ -43,7 +43,14 @@ const NoLimitApi = async (question) => {
     try {
         const response = await axios.post(url, data, { headers });
         logger.info('Berhasil mendapatkan respons dari API nolimit-next');
-        return response.data;
+
+        const result = response.data;
+        
+        if (typeof result === 'object') {
+            return JSON.stringify(result, null, 2);
+        } else {
+            return result;
+        }
     } catch (error) {
         logger.error(`Gagal mendapatkan respons dari API nolimit-next: ${error.message}`);
         return `Failed to generate content. Status code: ${error.response ? error.response.status : 'unknown'}`;
