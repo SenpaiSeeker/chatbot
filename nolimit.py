@@ -38,7 +38,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     try:
         result = await no_limit_api(user_message)
-        await send_large_output(update.effective_chat.id, result, context)
+        await send_large_output(update, result, context)
     except Exception as e:
         await update.message.reply_text(f"Terjadi kesalahan: {str(e)}")
         logger.error(f"Terjadi kesalahan: {str(e)}")
@@ -66,15 +66,15 @@ async def no_limit_api(question):
         logger.error(f"Gagal mendapatkan respons dari API nolimit-next: {e}")
         return f"Failed to generate content. Error: {str(e)}"
 
-async def send_large_output(chat_id, output, context):
+async def send_large_output(update, output, context):
     logger.info('Mengirim output besar ke pengguna')
     if len(output) <= 4000:
-        await context.bot.send_message(chat_id=chat_id, text=output)
+        await update.message.reply_text(output)
     else:
         with open('result.txt', 'w') as file:
             file.write(output)
         
-        await context.bot.send_document(chat_id=chat_id, document=open('result.txt', 'rb'))
+        await context.bot.send_document(chat_id=update.effective_chat.id, document=open('result.txt', 'rb'))
         os.remove('result.txt')
 
 def main():
@@ -82,8 +82,7 @@ def main():
     
     application.add_handler(CommandHandler("start", start))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-    
-    logger.info('Bot is running...')
+
     application.run_polling()
 
 if __name__ == '__main__':
