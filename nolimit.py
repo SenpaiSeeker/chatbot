@@ -71,7 +71,7 @@ async def no_limit_api(question):
 async def send_large_output(update, output, context):
     logs(__name__).info('Mengirim output besar ke pengguna')
     if len(output) <= 4000:
-        await update.message.reply_text(output, parse_mode='Markdown')
+        await update.message.reply_text(output)
     else:
         with open('result.txt', 'w') as file:
             file.write(output)
