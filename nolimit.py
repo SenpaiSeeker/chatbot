@@ -11,7 +11,9 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
-logger = logging.getLogger(__name__)
+
+def logs(msg):
+    return logging.getLogger(msg)
 
 BOT_TOKEN = os.getenv('BOT_TOKEN')
 
@@ -28,11 +30,11 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode='Markdown',
         reply_markup=reply_markup
     )
-    logger.info('Mengirim pesan selamat datang')
+    logs(__name__).info('Mengirim pesan selamat datang')
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_message = update.message.text
-    logger.info(f"Menerima pesan dari pengguna dengan ID: {update.effective_user.id}")
+    logs(__name__).info(f"Menerima pesan dari pengguna dengan ID: {update.effective_user.id}")
     
     await context.bot.send_chat_action(chat_id=update.effective_chat.id, action='typing')
     
@@ -41,10 +43,10 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await send_large_output(update, result, context)
     except Exception as e:
         await update.message.reply_text(f"Terjadi kesalahan: {str(e)}")
-        logger.error(f"Terjadi kesalahan: {str(e)}")
+        logs(__name__).error(f"Terjadi kesalahan: {str(e)}")
 
 async def no_limit_api(question):
-    logger.info('Memproses pertanyaan dari pengguna')
+    logs(__name__).info('Memproses pertanyaan dari pengguna')
     
     url = "https://nolimit-next-api.vercel.app/api/chatbot"
     data = {
@@ -58,16 +60,16 @@ async def no_limit_api(question):
     try:
         response = requests.post(url, json=data, headers=headers)
         response.raise_for_status()
-        logger.info('Berhasil mendapatkan respons dari API nolimit-next')
+        logs(__name__).info('Berhasil mendapatkan respons dari API nolimit-next')
         
         result = response.json().get('message', '')
         return result if isinstance(result, str) else str(result)
     except requests.RequestException as e:
-        logger.error(f"Gagal mendapatkan respons dari API nolimit-next: {e}")
+        logs(__name__).error(f"Gagal mendapatkan respons dari API nolimit-next: {e}")
         return f"Failed to generate content. Error: {str(e)}"
 
 async def send_large_output(update, output, context):
-    logger.info('Mengirim output besar ke pengguna')
+    logs(__name__).info('Mengirim output besar ke pengguna')
     if len(output) <= 4000:
         await update.message.reply_text(output)
     else:
