@@ -2,9 +2,8 @@ import os
 import logging
 import requests
 import json
-from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, MessageHandler, CallbackContext, filters
-from telegram.ext.dispatcher import run_async
 
 logging.basicConfig(
     format='%(asctime)s [%(levelname)s]: %(message)s',
@@ -19,7 +18,6 @@ def get_text(message):
     user_text = message.text
     return f"{user_text}\n\n{reply_text}" if reply_text and user_text else reply_text + user_text
 
-@run_async
 def no_limit_api(question):
     logger.info('Memproses pertanyaan dari pengguna')
     url = "https://nolimit-next-api.vercel.app/api/chatbot"
