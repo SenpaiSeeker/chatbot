@@ -1,9 +1,10 @@
 import logging
 import os
-import requests
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, MessageHandler, filters
 from dotenv import load_dotenv
+
+from mytools import ChatBot 
 
 load_dotenv()
 
@@ -39,34 +40,11 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_chat_action(chat_id=update.effective_chat.id, action='typing')
     
     try:
-        result = await no_limit_api(user_message)
+        result = ChatBot.Text(user_message)
         await send_large_output(update, result, context)
     except Exception as e:
         await update.message.reply_text(f"Terjadi kesalahan: {str(e)}")
         logs(__name__).error(f"Terjadi kesalahan: {str(e)}")
-
-async def no_limit_api(question):
-    logs(__name__).info('Memproses pertanyaan dari pengguna')
-    
-    url = "https://nolimit-next-api.vercel.app/api/chatbot"
-    data = {
-        "text": question,
-        "lang": "indonesia",
-        "botid": "2231836083",
-        "botname": "@FakeCodeX"
-    }
-    headers = {"Content-Type": "application/json"}
-    
-    try:
-        response = requests.post(url, json=data, headers=headers)
-        response.raise_for_status()
-        logs(__name__).info('Berhasil mendapatkan respons dari API nolimit-next')
-        
-        result = response.json().get('message', '')
-        return result if isinstance(result, str) else str(result)
-    except requests.RequestException as e:
-        logs(__name__).error(f"Gagal mendapatkan respons dari API nolimit-next: {e}")
-        return f"Failed to generate content. Error: {str(e)}"
 
 async def send_large_output(update, output, context):
     logs(__name__).info('Mengirim output besar ke pengguna')
