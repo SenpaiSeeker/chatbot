@@ -52,7 +52,7 @@ async def handle_chatbot(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     global chatbot_enabled
-    if not chatbot_enabled.get(update.effective_chat.id, True):
+    if not chatbot_enabled.get(update.effective_chat.id, False):
         return
     
     user_message = update.message.text
