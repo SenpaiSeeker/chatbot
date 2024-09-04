@@ -20,16 +20,19 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 chatbot_enabled = {}
 
 
+def mention(user):
+    name = f"{user.first_name} {user.last_name}" if user.last_name else user.first_name
+    link = f"tg://user?id={user.id}"
+    return f"[{name}]({link})"
+
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     keyboard = [[InlineKeyboardButton("developer", url="https://t.me/NorSodikin")]]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     await update.message.reply_text(
-        f"**👋 Hai [{user.first_name}](tg://user?id={user.id})!** "
-        "**Kenalin nih, gue bot pintar berbasis Python dari mytoolsID.** "
-        "**Gue siap bantu jawab semua pertanyaan lo.** "
-        "\n**Mau aktifin bot? Ketik aja /chatbot on**",
+        f"**👋 Hai {mention(user)}! Kenalin nih, gue bot pintar berbasis Python dari mytoolsID.Gue siap bantu jawab semua pertanyaan lo.\nMau aktifin bot? Ketik aja /chatbot on**",
         parse_mode="Markdown",
         reply_markup=reply_markup,
     )
