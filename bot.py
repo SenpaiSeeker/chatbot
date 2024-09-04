@@ -18,7 +18,7 @@ def logs(msg):
 
 BOT_TOKEN = os.getenv('BOT_TOKEN')
 
-chatbot_enabled = False
+chatbot_enabled = {}
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
@@ -40,11 +40,11 @@ async def handle_chatbot(update: Update, context: ContextTypes.DEFAULT_TYPE):
     command = context.args[0].lower() if context.args else ''
     
     if command == 'on':
-        chatbot_enabled = True
+        chatbot_enabled[update.effective_chat.id] = True
         await update.message.reply_text("🤖 Chatbot telah diaktifkan.")
         logs(__name__).info('Chatbot diaktifkan')
     elif command == 'off':
-        chatbot_enabled = False
+        chatbot_enabled[update.effective_chat.id] = False
         await update.message.reply_text("🚫 Chatbot telah dinonaktifkan.")
         logs(__name__).info('Chatbot dinonaktifkan')
     else:
@@ -52,7 +52,7 @@ async def handle_chatbot(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     global chatbot_enabled
-    if not chatbot_enabled:
+    if not chatbot_enabled.get(update.effective_chat.id, True):
         return
     
     user_message = update.message.text
