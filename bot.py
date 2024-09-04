@@ -49,7 +49,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def send_large_output(update, output, context):
     logs(__name__).info('Mengirim output besar ke pengguna')
     if len(output) <= 4000:
-        await update.message.reply_text(output)
+        await update.message.reply_text(output.replace("*", ""))
     else:
         with open('result.txt', 'w') as file:
             file.write(output)
