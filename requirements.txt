@@ -1,0 +1,3 @@
+python-dotenv 
+python-teleram-bot
+mytoolsID==0.5.7.dev6
