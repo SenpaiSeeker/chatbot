@@ -61,7 +61,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_chat_action(chat_id=update.effective_chat.id, action='typing')
     
     try:
-        result = ChatBot().Text(user_message)
+        result = ChatBot(name="tomi").Text(user_message)
         await update.message.reply_text(result.replace("*", ""))
     except Exception as e:
         await update.message.reply_text(f"Terjadi kesalahan: {str(e)}")
