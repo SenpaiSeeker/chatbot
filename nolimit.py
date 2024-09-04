@@ -40,7 +40,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_chat_action(chat_id=update.effective_chat.id, action='typing')
     
     try:
-        result = ChatBot.Text(user_message)
+        result = ChatBot.Text(user_message, name="puki")
         await send_large_output(update, result, context)
     except Exception as e:
         await update.message.reply_text(f"Terjadi kesalahan: {str(e)}")
