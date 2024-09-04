@@ -18,22 +18,43 @@ def logs(msg):
 
 BOT_TOKEN = os.getenv('BOT_TOKEN')
 
+chatbot_enabled = False
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     keyboard = [[InlineKeyboardButton("developer", url="https://t.me/NorSodikin")]]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     await update.message.reply_text(
-        f"👋 Hai [{user.first_name}](tg://user?id={user.id})! "
-        "Perkenalkan saya ai telegram bot berbasis program python. "
-        "Dan saya adalah robot kecerdasan buatan dari api nolimit-next, "
-        "dan saya siap menjawab pertanyaan yang Anda berikan.",
+        f"**👋 Hai [{user.first_name}](tg://user?id={user.id})! "
+        "Kenalin nih, gue bot pintar berbasis Python dari mytoolsID. "
+        "Gue siap bantu jawab semua pertanyaan lo. "
+        "\nMau aktifin bot? Ketik aja /chatbot on**",
         parse_mode='Markdown',
         reply_markup=reply_markup
     )
     logs(__name__).info('Mengirim pesan selamat datang')
 
+async def handle_chatbot(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    global chatbot_enabled
+    command = context.args[0].lower() if context.args else ''
+    
+    if command == 'on':
+        chatbot_enabled = True
+        await update.message.reply_text("🤖 Chatbot telah diaktifkan.")
+        logs(__name__).info('Chatbot diaktifkan')
+    elif command == 'off':
+        chatbot_enabled = False
+        await update.message.reply_text("🚫 Chatbot telah dinonaktifkan.")
+        logs(__name__).info('Chatbot dinonaktifkan')
+    else:
+        await update.message.reply_text("❓ Perintah tidak dikenal. Gunakan /chatbot on atau /chatbot off.")
+
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    global chatbot_enabled
+    if not chatbot_enabled:
+        return
+    
     user_message = update.message.text
     logs(__name__).info(f"Menerima pesan dari pengguna dengan ID: {update.effective_user.id}")
     
@@ -41,26 +62,16 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     try:
         result = ChatBot().Text(user_message)
-        await send_large_output(update, result, context)
+        await update.message.reply_text(result.replace("*", ""))
     except Exception as e:
         await update.message.reply_text(f"Terjadi kesalahan: {str(e)}")
         logs(__name__).error(f"Terjadi kesalahan: {str(e)}")
-
-async def send_large_output(update, output, context):
-    logs(__name__).info('Mengirim output besar ke pengguna')
-    if len(output) <= 4000:
-        await update.message.reply_text(output.replace("*", ""))
-    else:
-        with open('result.txt', 'w') as file:
-            file.write(output)
-        
-        await context.bot.send_document(chat_id=update.effective_chat.id, document=open('result.txt', 'rb'))
-        os.remove('result.txt')
 
 def main():
     application = ApplicationBuilder().token(BOT_TOKEN).build()
     
     application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("chatbot", handle_chatbot))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
     application.run_polling()
