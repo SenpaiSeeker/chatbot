@@ -50,12 +50,17 @@ async def handle_chatbot(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text("❓ Perintah tidak dikenal. Gunakan /chatbot on atau /chatbot off.")
 
+def get_text(message):
+    reply_text = message.reply_to_message.text if message.reply_to_message else ''
+    user_text = message.text
+    return f"{user_text}\n\n{reply_text}" if reply_text and user_text else reply_text + user_text
+
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     global chatbot_enabled
     if not chatbot_enabled.get(update.effective_chat.id, False):
         return
     
-    user_message = update.message.text
+    user_message = get_text(update.message)
     logs(__name__).info(f"Menerima pesan dari pengguna dengan ID: {update.effective_user.id}")
     
     await context.bot.send_chat_action(chat_id=update.effective_chat.id, action='typing')
