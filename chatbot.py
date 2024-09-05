@@ -84,9 +84,15 @@ def get_text(message):
 
 
 async def send_large_output(message, output):
-    with BytesIO(str.encode(str(output))) as out_file:
-        out_file.name = "result.txt"
-        await message.reply_document(document=out_file)
+    logs(__name__).info('Mengirim output besar ke pengguna')
+    if len(output) <= 4000:
+        await message.reply(output)
+    else:
+        with open(f'{message.chat.id}_result.txt', 'w') as file:
+            file.write(output)
+        
+        await message.reply_document(document=document=open(f'{message.chat.id}_result.txt', 'rb'))
+        os.remove(f'{message.chat.id}_result.txt')
 
 
 @app.on_message(filters.text & ~filters.command(["start", "chatbot"]))
