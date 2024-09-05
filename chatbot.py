@@ -91,7 +91,7 @@ async def send_large_output(message, output):
         with open(f'{message.chat.id}_result.txt', 'w') as file:
             file.write(output)
         
-        await message.reply_document(document=document=open(f'{message.chat.id}_result.txt', 'rb'))
+        await message.reply_document(document=open(f'{message.chat.id}_result.txt', 'rb'))
         os.remove(f'{message.chat.id}_result.txt')
 
 
