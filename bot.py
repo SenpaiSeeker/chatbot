@@ -29,14 +29,14 @@ def mention(user):
     return f"[{name}]({link})"
 
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     keyboard = [[InlineKeyboardButton("developer", url="https://t.me/NorSodikin")]]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     await update.message.reply_text(
-        f"**👋 Hai {mention(user)}! Kenalin nih, gue bot pintar berbasis Python dari mytoolsID.Gue siap bantu jawab semua pertanyaan lo.\nMau aktifin bot? Ketik aja /chatbot on**",
-        parse_mode=ParseMode.MARKDOWN_V2,
+        f"**👋 Hai {mention(user)}! Kenalin nih, gue bot pintar berbasis Python dari mytoolsID.Gue siap bantu jawab semua pertanyaan lo.\n\nMau aktifin bot? Ketik aja /chatbot on**",
+        parse_mode=ParseMode.MARKDOWN,
         reply_markup=reply_markup,
     )
     logs(__name__).info("Mengirim pesan selamat datang")
