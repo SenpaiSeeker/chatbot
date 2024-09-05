@@ -2,6 +2,7 @@ import logging
 import os
 
 from dotenv import load_dotenv
+from telegram.constants import ParseMode
 from mytools import ChatBot
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, MessageHandler, filters
@@ -35,7 +36,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text(
         f"**👋 Hai {mention(user)}! Kenalin nih, gue bot pintar berbasis Python dari mytoolsID.Gue siap bantu jawab semua pertanyaan lo.\nMau aktifin bot? Ketik aja /chatbot on**",
-        parse_mode="Markdown",
+        parse_mode=ParseMode.MARKDOWN_V2,
         reply_markup=reply_markup,
     )
     logs(__name__).info("Mengirim pesan selamat datang")
