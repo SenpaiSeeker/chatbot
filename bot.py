@@ -58,7 +58,7 @@ async def handle_chatbot(update: Update, context: ContextTypes.DEFAULT_TYPE):
 def get_text(message):
     reply_text = message.reply_to_message.text if message.reply_to_message else ""
     user_text = message.text
-    return f"{user_text}\n\n{reply_text}" if reply_text and user_text else reply_text + user_text
+    return f"anda: {user_text}\n\nsaya: {reply_text}" if reply_text and user_text else reply_text + user_text
 
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
