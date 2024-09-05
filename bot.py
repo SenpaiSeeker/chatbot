@@ -21,6 +21,7 @@ BOT_NAME = os.getenv("BOT_NAME")
 DEV_NAME = os.getenv("DEV_NAME")
 
 chatbot_enabled = {}
+chatbot = ChatBot(name=BOT_NAME, dev=DEV_NAME)
 
 
 def mention(user):
@@ -75,7 +76,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_chat_action(chat_id=update.effective_chat.id, action="typing")
 
     try:
-        result = ChatBot(name=BOT_NAME, dev=DEV_NAME).Text(user_message)
+        result = chatbot.Text(user_message)
         await update.message.reply_text(result.replace("*", ""))
     except Exception as e:
         await update.message.reply_text(f"Terjadi kesalahan: {str(e)}")
