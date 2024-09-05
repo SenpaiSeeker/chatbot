@@ -1,5 +1,6 @@
 import logging
 import os
+
 from dotenv import load_dotenv
 from mytools import ChatBot
 from pyrogram import Client, filters
@@ -10,8 +11,10 @@ load_dotenv()
 
 logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
 
+
 def logs(msg):
     return logging.getLogger(msg)
+
 
 API_ID = os.getenv("API_ID")
 API_HASH = os.getenv("API_HASH")
@@ -24,10 +27,12 @@ app = Client("my_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 chatbot_enabled = {}
 chatbot = ChatBot(name=BOT_NAME, dev=DEV_NAME)
 
+
 def mention(user):
     name = f"{user.first_name} {user.last_name}" if user.last_name else user.first_name
     link = f"tg://user?id={user.id}"
     return f"[{name}]({link})"
+
 
 def inline(buttons, row_width=2):
     keyboard = [
@@ -35,6 +40,7 @@ def inline(buttons, row_width=2):
         for i in range(0, len(buttons), row_width)
     ]
     return InlineKeyboardMarkup(keyboard)
+
 
 @app.on_message(filters.command("start"))
 async def start(client, message):
@@ -52,6 +58,7 @@ async def start(client, message):
     )
     logs(__name__).info("Mengirim pesan selamat datang")
 
+
 @app.on_message(filters.command("chatbot"))
 async def handle_chatbot(client, message):
     global chatbot_enabled
@@ -68,10 +75,12 @@ async def handle_chatbot(client, message):
     else:
         await message.reply_text("❓ Perintah tidak dikenal. Gunakan /chatbot on atau /chatbot off.")
 
+
 def get_text(message):
     reply_text = message.reply_to_message.text if message.reply_to_message else ""
     user_text = message.text
     return f"anda: {user_text}\n\nsaya: {reply_text}" if reply_text and user_text else reply_text + user_text
+
 
 @app.on_message(filters.text & ~filters.command)
 async def handle_message(client, message):
@@ -90,5 +99,6 @@ async def handle_message(client, message):
     except Exception as e:
         await message.reply_text(f"Terjadi kesalahan: {str(e)}")
         logs(__name__).error(f"Terjadi kesalahan: {str(e)}")
+
 
 app.run()
