@@ -1,9 +1,9 @@
 import logging
 import os
+from io import BytesIO
 
 from dotenv import load_dotenv
 from mytools import ChatBot
-from io import BytesIO
 from pyrogram import Client, filters
 from pyrogram.enums import ChatAction
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
@@ -81,6 +81,7 @@ def get_text(message):
     reply_text = message.reply_to_message.text if message.reply_to_message else ""
     user_text = message.text
     return f"anda: {user_text}\n\nsaya: {reply_text}" if reply_text and user_text else reply_text + user_text
+
 
 async def send_large_output(message, output):
     with BytesIO(str.encode(str(output))) as out_file:
