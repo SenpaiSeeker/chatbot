@@ -1,6 +1,5 @@
 import logging
 import os
-from io import BytesIO
 
 from dotenv import load_dotenv
 from mytools import ChatBot
@@ -84,15 +83,15 @@ def get_text(message):
 
 
 async def send_large_output(message, output):
-    logs(__name__).info('Mengirim output besar ke pengguna')
+    logs(__name__).info("Mengirim output besar ke pengguna")
     if len(output) <= 4000:
         await message.reply(output)
     else:
-        with open(f'{message.chat.id}_result.txt', 'w') as file:
+        with open(f"{message.chat.id}_result.txt", "w") as file:
             file.write(output)
-        
-        await message.reply_document(document=open(f'{message.chat.id}_result.txt', 'rb'))
-        os.remove(f'{message.chat.id}_result.txt')
+
+        await message.reply_document(document=open(f"{message.chat.id}_result.txt", "rb"))
+        os.remove(f"{message.chat.id}_result.txt")
 
 
 @app.on_message(filters.text & ~filters.command(["start", "chatbot"]))
