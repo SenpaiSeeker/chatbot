@@ -3,6 +3,7 @@ import os
 
 from dotenv import load_dotenv
 from mytools import ChatBot
+from io import BytesIO
 from pyrogram import Client, filters
 from pyrogram.enums import ChatAction
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
@@ -22,7 +23,7 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 BOT_NAME = os.getenv("BOT_NAME")
 DEV_NAME = os.getenv("DEV_NAME")
 
-app = Client("my_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+app = Client(name=BOT_TOKEN.split(":")[0], api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
 chatbot_enabled = {}
 chatbot = ChatBot(name=BOT_NAME, dev=DEV_NAME)
@@ -81,6 +82,11 @@ def get_text(message):
     user_text = message.text
     return f"anda: {user_text}\n\nsaya: {reply_text}" if reply_text and user_text else reply_text + user_text
 
+async def send_large_output(message, output):
+    with BytesIO(str.encode(str(output))) as out_file:
+        out_file.name = "result.txt"
+        await message.reply_document(document=out_file)
+
 
 @app.on_message(filters.text & ~filters.command(["start", "chatbot"]))
 async def handle_message(client, message):
@@ -95,7 +101,7 @@ async def handle_message(client, message):
 
     try:
         result = chatbot.Text(user_message)
-        await message.reply_text(result)
+        await send_large_output(message, result)
     except Exception as e:
         await message.reply_text(f"Terjadi kesalahan: {str(e)}")
         logs(__name__).error(f"Terjadi kesalahan: {str(e)}")
