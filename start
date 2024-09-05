@@ -1,1 +1,1 @@
-git pull && python3 bot.py
+git pull && rm -rf *.session* && python3 chatbot.py
