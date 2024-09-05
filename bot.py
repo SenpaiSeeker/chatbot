@@ -35,7 +35,7 @@ def inline(buttons, row_width=2):
         [InlineKeyboardButton(**button_data) for button_data in buttons[i : i + row_width]]
         for i in range(0, len(buttons), row_width)
    ]
-   return InlineKeyboardMarkup(keyboard)
+    return InlineKeyboardMarkup(keyboard)
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
