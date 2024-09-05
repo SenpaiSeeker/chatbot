@@ -32,7 +32,7 @@ def mention(user):
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
-    keyboard = [[InlineKeyboardButton("developer", url="https://t.me/NorSodikin")]]
+    keyboard = [[InlineKeyboardButton("developer", url="https://t.me/NorSodikin")], [InlineKeyboardButton("repository", url="https://github.com/SenpaiSeeker/chatbot")]]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     await update.message.reply_text(
