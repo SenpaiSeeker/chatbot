@@ -30,13 +30,20 @@ def mention(user):
     return f"[{name}]({link})"
 
 
+def inline(buttons, row_width=2):
+    keyboard = [
+        [InlineKeyboardButton(**button_data) for button_data in buttons[i : i + row_width]]
+        for i in range(0, len(buttons), row_width)
+   ]
+   return InlineKeyboardMarkup(keyboard)
+
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
-    keyboard = [
-        [InlineKeyboardButton("developer", url="https://t.me/NorSodikin")],
-        [InlineKeyboardButton("repository", url="https://github.com/SenpaiSeeker/chatbot")],
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
+    keyboard = [{"text": "developer", "url": "https://t.me/NorSodikin"},
+                {"text": "channel", "url": "https://t.me/FakeCodeX"},
+                {"text": "repository", "url": "https://github.com/SenpaiSeeker/chatbot"}]
+    reply_markup = inline(keyboard)
 
     await update.message.reply_text(
         f"**👋 Hai {mention(user)}! Kenalin nih, gue bot pintar berbasis Python dari mytoolsID.Gue siap bantu jawab semua pertanyaan lo.\n\nMau aktifin bot? Ketik aja /chatbot on**",
