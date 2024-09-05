@@ -90,7 +90,7 @@ def main():
 
     app.add_handler(filters.command("start")(start))
     app.add_handler(filters.command("chatbot")(handle_chatbot))
-    app.add_handler(filters.text & ~filters.command)(handle_message))
+    app.add_handler(filters.text & ~filters.command, handle_message)
 
     app.run()
 
