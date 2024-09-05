@@ -11,6 +11,8 @@ pip3 install requirements.txt
 - KETIGA BUAT ENVIRONMENT
 `nano .env` DAN ISI CONFIG DIBAWAH INI 👇
 ```env
+API_ID=
+API_HASH=
 BOT_TOKEN=
 BOT_NAME=
 DEV_NAME=
