@@ -34,15 +34,17 @@ def inline(buttons, row_width=2):
     keyboard = [
         [InlineKeyboardButton(**button_data) for button_data in buttons[i : i + row_width]]
         for i in range(0, len(buttons), row_width)
-   ]
+    ]
     return InlineKeyboardMarkup(keyboard)
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
-    keyboard = [{"text": "developer", "url": "https://t.me/NorSodikin"},
-                {"text": "channel", "url": "https://t.me/FakeCodeX"},
-                {"text": "repository", "url": "https://github.com/SenpaiSeeker/chatbot"}]
+    keyboard = [
+        {"text": "developer", "url": "https://t.me/NorSodikin"},
+        {"text": "channel", "url": "https://t.me/FakeCodeX"},
+        {"text": "repository", "url": "https://github.com/SenpaiSeeker/chatbot"},
+    ]
     reply_markup = inline(keyboard)
 
     await update.message.reply_text(
