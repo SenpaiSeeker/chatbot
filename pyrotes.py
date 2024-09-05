@@ -82,7 +82,7 @@ def get_text(message):
     return f"anda: {user_text}\n\nsaya: {reply_text}" if reply_text and user_text else reply_text + user_text
 
 
-@app.on_message(filters.text & ~filters.command)
+@app.on_message(filters.text & ~filters.create(filters.command))
 async def handle_message(client, message):
     global chatbot_enabled
     if not chatbot_enabled.get(message.chat.id, False):
