@@ -1,5 +1,6 @@
 import logging
 import os
+import sys 
 
 from dotenv import load_dotenv
 from mytools import ChatBot
@@ -7,7 +8,7 @@ from pyrogram import Client, filters
 from pyrogram.enums import ChatAction
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-load_dotenv()
+load_dotenv(sys.argv[1])
 
 logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
 
