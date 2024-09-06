@@ -1,0 +1,40 @@
+#!/bin/bash
+
+create_new_env() {
+    while true; do
+        read -p "Masukkan nama file env yang ingin dibuat: " nama_env
+        config_file="$nama_env"
+
+        if [[ ! $nama_env =~ \.env$ ]]; then
+            echo "Nama file konfigurasi harus berakhir dengan .env, contoh: robot.env"
+        else
+            break
+        fi
+    done
+
+    while [ -e "$config_file" ]; do
+        echo "File konfigurasi '$config_file' sudah ada."
+        read -p "Masukkan nama file env yang lain: " nama_env
+        config_file="$nama_env"
+    done
+
+    echo "Silahkan isi konfigurasi berikut ini"
+    
+    declare -a env_variables=("API_ID" "API_HASH" "BOT_TOKEN" "BOT_NAME" "DEV_NAME")
+    
+    for var in "${env_variables[@]}"; do
+        read -p "Masukkan nilai untuk $var: " value
+        echo "$var=$value" >> "$config_file"
+    done
+    
+    echo "Konfigurasi telah disimpan dalam file $config_file"
+
+    read -p "Apakah anda ingin menjalankan file env yang telah dibuat? (y/n): " run_env
+    if [[ $run_env == "y" || $run_env == "Y" ]]; then
+        git pull && rm -rf *.session* && python3 chatbot.py "$config_file"
+    else
+        echo "Anda memilih untuk tidak menjalankan file $config_file!. Untuk menjalankan $config_file silahkan gunakan perintah: bash start"
+    fi
+}
+
+create_new_env
