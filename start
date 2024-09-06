@@ -1,11 +1,10 @@
 #!/bin/bash
 
 create_env_file() {
-    read -p "Silakan masukkan nama env yang ingin dibuat (contoh: robot.env): " name_env
+    read -p "Silakan masukkan nama env yang ingin dibuat, contoh: robot.env: " name_env
     touch "$name_env"
 
     declare -a env_variables=("API_ID" "API_HASH" "BOT_TOKEN" "BOT_NAME" "DEV_NAME")
-
     for var in "${env_variables[@]}"; do
         read -p "Masukkan $var: " value
         echo "$var=$value" >> "$name_env"
@@ -14,53 +13,49 @@ create_env_file() {
     read -p "Apakah file env sudah diisi dengan konfigurasi yang benar? (y/n): " env_configured
     if [ "$env_configured" != "y" ]; then
         rm "$name_env"
-        echo "File env dihapus. Silakan ulangi proses pembuatan."
         create_env_file
     else
         echo "$name_env telah dibuat."
         read -p "Apakah Anda ingin menjalankan env yang baru dibuat? (y/n): " run_new_env
         if [ "$run_new_env" == "y" ]; then
-            run_env "$name_env"
+            git pull && rm -rf *.session* && python3 chatbot.py "$name_env"
             exit 0
         fi
     fi
 }
 
-run_env() {
-    local env_file=$1
-    if [ -f "$env_file" ]; then
-        git pull
-        rm -rf *.session*
-        python3 chatbot.py "$env_file"
-    else
-        echo "File $env_file tidak ditemukan."
-        exit 1
+list_env_files() {
+    env_files=($(find . -maxdepth 1 -type f -name "*.env" -exec basename {} \;))
+    if [ ${#env_files[@]} -eq 0 ]; then
+        read -p "Tidak ditemukan file env. Apakah Anda ingin membuatnya sekarang? (y/n): " create_env
+        if [ "$create_env" == "y" ]; then
+            create_env_file
+        else
+            echo "Terima kasih. Silakan buat file env kemudian jalankan skrip ini kembali."
+            exit 0
+        fi
     fi
+
+    echo "Daftar file env yang ditemukan:"
+    for i in "${!env_files[@]}"; do
+        echo "$((i+1)). ${env_files[$i]}"
+    done
 }
 
-env_files=$(find . -maxdepth 1 -type f -name "*.env" -exec basename {} \;)
-if [ -z "$env_files" ]; then
-    read -p "Tidak ditemukan file env. Apakah Anda ingin membuatnya sekarang? (y/n): " create_env
-    if [ "$create_env" == "y" ]; then
-        create_env_file
-    else
-        echo "Silakan buat file env kemudian jalankan skrip ini kembali."
-        exit 0
-    fi
-fi
+select_env_file() {
+    while true; do
+        read -p "Silakan masukkan angka sesuai env yang ingin digunakan: " choice
 
-echo "Daftar file env yang ditemukan:"
-for x in $env_files; do
-    echo "$x"
-done
+        if [[ $choice -gt 0 && $choice -le ${#env_files[@]} ]]; then
+            FILE_ENV="${env_files[$((choice-1))]}"
+            break
+        else
+            echo "Pilihan tidak valid. Silakan masukkan angka yang benar."
+        fi
+    done
+}
 
-while true; do
-    read -p "Silakan masukkan nama env yang ingin digunakan: " FILE_ENV
+list_env_files
+select_env_file
 
-    if [[ ! " ${env_files[*]} " =~ " $FILE_ENV " ]]; then
-        echo "File $FILE_ENV tidak ditemukan. Silakan masukkan nama file yang valid."
-    else
-        run_env "$FILE_ENV"
-        break
-    fi
-done
+git pull && rm -rf *.session* && python3 chatbot.py "$FILE_ENV"
