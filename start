@@ -28,7 +28,6 @@ if [ -z "$env_files" ]; then
     fi
 fi
 
-env_files=$(find . -maxdepth 1 -type f -name "*.env" -exec basename {} \;)
 echo "Daftar file env yang ditemukan:"
 for x in $env_files; do
     echo "$x"
