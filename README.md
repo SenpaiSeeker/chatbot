@@ -9,14 +9,10 @@ git clone https://github.com/SenpaiSeeker/chatbot && cd chatbot
 pip3 install requirements.txt
 ```
 - KETIGA BUAT ENVIRONMENT
-`nano .env` DAN ISI CONFIG DIBAWAH INI 👇
-```env
-API_ID=
-API_HASH=
-BOT_TOKEN=
-BOT_NAME=
-DEV_NAME=
+```bash
+bash config
 ```
+- KEMUDIAN ISI SEMUA YANG DIMINTA
 - DAN YANG TERAKHIR MENJALANKAN BOT DENGAN PERINTAH
 ```bash
 bash start
