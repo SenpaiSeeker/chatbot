@@ -1,6 +1,6 @@
 import logging
 import os
-import sys 
+import sys
 
 from dotenv import load_dotenv
 from mytools import ChatBot
