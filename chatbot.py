@@ -3,6 +3,7 @@ import os
 import sys
 
 from dotenv import load_dotenv
+from io import BytesIO
 from mytools import ChatBot
 from pyrogram import Client, filters
 from pyrogram.enums import ChatAction
@@ -83,19 +84,42 @@ def get_text(message):
     return f"anda: {user_text}\n\nsaya: {reply_text}" if reply_text and user_text else reply_text + user_text
 
 
+def get_arg(message):
+    if message.reply_to_message and len(message.command) < 2:
+        return message.reply_to_message.text or message.reply_to_message.caption or ""
+    return message.text.split(None, 1)[1] if len(message.command) > 1 else ""
+
+
+
 async def send_large_output(message, output):
     logs(__name__).info("Mengirim output besar ke pengguna")
     if len(output) <= 4000:
         await message.reply(output)
     else:
-        with open(f"{message.chat.id}_result.txt", "w") as file:
-            file.write(output)
-
-        await message.reply_document(document=open(f"{message.chat.id}_result.txt", "rb"))
-        os.remove(f"{message.chat.id}_result.txt")
+        with BytesIO(str.encode(str(output))) as out_file:
+            out_file.name = "result.txt"
+            await message.reply_document(document=out_file)
 
 
-@app.on_message(filters.text & ~filters.command(["start", "chatbot"]))
+@app.on_message("image")
+async def handle_image(client, message):
+    prompt = get_arg(message)
+    if not prompt:
+        return await message.reply("/image (prompt text)")
+
+    await client.send_chat_action(chat_id=message.chat.id, action=ChatAction.UPLOAD_PHOTO)
+    
+    url = f"https://widipe.com/v1/text2img?text={prompt}"
+    res = requests.get(url, headers={"accept": "image/jpeg"})
+    
+    if res.status_code == 200:
+        image = io.BytesIO(res.content)
+        image.name = f"{message.id}_{client.me.id}.jpg"
+        await message.reply_photo(image)
+    else:
+        await message.reply("Failed to generate image.")
+        
+@app.on_message(filters.text & ~filters.command(["start", "chatbot", "image"]))
 async def handle_message(client, message):
     global chatbot_enabled
     if not chatbot_enabled.get(message.chat.id, False):
