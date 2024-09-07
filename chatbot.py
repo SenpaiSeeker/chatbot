@@ -107,6 +107,7 @@ async def handle_image(client, message):
     if not prompt:
         return await message.reply("/image (prompt text)")
 
+    logs(__name__).info(f"Menerima pesan dari pengguna dengan ID: {message.from_user.id}")
     await client.send_chat_action(chat_id=message.chat.id, action=ChatAction.TYPING)
 
     url = f"https://widipe.com/v1/text2img?text={prompt}"
@@ -117,8 +118,10 @@ async def handle_image(client, message):
         image = BytesIO(res.content)
         image.name = f"{message.id}_{client.me.id}.jpg"
         await message.reply_photo(image)
+        logs(__name__).info(f"Mengirim foto ke: {message.chat.id}")
     else:
         await message.reply("Failed to generate image.")
+        logs(__name__).error("gagal membuat foto")
 
 
 @app.on_message(filters.text & ~filters.command(["start", "chatbot", "image"]))
