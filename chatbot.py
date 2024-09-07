@@ -88,12 +88,12 @@ def get_text(message):
 def get_arg(message):
     if message.reply_to_message and len(message.command) < 2:
         return message.reply_to_message.text or message.reply_to_message.caption or ""
-    
+
     if message.text and len(message.command) > 1:
         return message.text.split(None, 1)[1]
-    
+
     return ""
-    
+
 
 async def send_large_output(message, output):
     logs(__name__).info("Mengirim output besar ke pengguna")
