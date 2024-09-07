@@ -86,13 +86,9 @@ def get_text(message):
 
 
 def get_arg(message):
-    if message.reply_to_message and message.command and len(message.command) < 2:
+    if message.reply_to_message and len(message.command) < 2:
         return message.reply_to_message.text or message.reply_to_message.caption or ""
-
-    if message.text and message.command and len(message.command) > 1:
-        return message.text.split(None, 1)[1]
-
-    return ""
+    return message.text.split(None, 1)[1] if len(message.command) > 1 else ""
 
 
 async def send_large_output(message, output):
@@ -105,7 +101,7 @@ async def send_large_output(message, output):
             await message.reply_document(document=out_file)
 
 
-@app.on_message("image")
+@app.on_message(filters.command("image"))
 async def handle_image(client, message):
     prompt = get_arg(message)
     if not prompt:
