@@ -8,7 +8,7 @@ import requests
 from dotenv import load_dotenv
 from mytools import ChatBot
 from pyrogram import Client, filters, emoji, enums
-from pyrogram.enums import ChatAction
+from pyrogram.enums import ChatAction, ChatMemberStatus
 from pyrogram.errors import FloodWait
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
@@ -94,7 +94,7 @@ def get_text(message):
 
 def get_arg(message):
     if message.reply_to_message and len(message.command) < 2:
-        return message.reply_to_message.text atau message.reply_to_message.caption atau ""
+        return message.reply_to_message.text or message.reply_to_message.caption atau ""
     return message.text.split(None, 1)[1] if len(message.command) > 1 else ""
 
 
@@ -110,7 +110,7 @@ async def send_large_output(message, output):
 
 async def is_admin(client, message):
     member = await client.get_chat_member(message.chat.id, message.from_user.id)
-    return member.status in (enums.ChatMemberStatus.ADMINISTRATOR, enums.ChatMemberStatus.OWNER)
+    return member.status in (ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER)
 
 
 @app.on_message(filters.command("image"))
