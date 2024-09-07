@@ -3,6 +3,7 @@ import os
 import sys
 from io import BytesIO
 import random
+from time import time 
 import asyncio
 import requests
 from dotenv import load_dotenv
