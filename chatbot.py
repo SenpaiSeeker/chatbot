@@ -2,12 +2,14 @@ import logging
 import os
 import sys
 from io import BytesIO
-
+import random
+import asyncio
 import requests
 from dotenv import load_dotenv
 from mytools import ChatBot
-from pyrogram import Client, filters
+from pyrogram import Client, filters, emoji, enums
 from pyrogram.enums import ChatAction
+from pyrogram.errors import FloodWait
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 load_dotenv(sys.argv[1])
@@ -29,6 +31,8 @@ app = Client(name=BOT_TOKEN.split(":")[0], api_id=API_ID, api_hash=API_HASH, bot
 
 chatbot_enabled = {}
 chatbot = ChatBot(name=BOT_NAME, dev=DEV_NAME)
+
+chat_tagged = []
 
 
 def mention(user):
@@ -67,6 +71,9 @@ async def handle_chatbot(client, message):
     global chatbot_enabled
     command = message.text.split()[1].lower() if len(message.text.split()) > 1 else ""
 
+    if not await is_admin(client, message):
+        return await message.reply("Maaf, perintah ini hanya untuk admin. 😎")
+
     if command == "on":
         chatbot_enabled[message.chat.id] = True
         await message.reply_text("🤖 Chatbot telah diaktifkan.")
@@ -87,7 +94,7 @@ def get_text(message):
 
 def get_arg(message):
     if message.reply_to_message and len(message.command) < 2:
-        return message.reply_to_message.text or message.reply_to_message.caption or ""
+        return message.reply_to_message.text atau message.reply_to_message.caption atau ""
     return message.text.split(None, 1)[1] if len(message.command) > 1 else ""
 
 
@@ -99,6 +106,11 @@ async def send_large_output(message, output):
         with BytesIO(str.encode(str(output))) as out_file:
             out_file.name = "result.txt"
             await message.reply_document(document=out_file)
+
+
+async def is_admin(client, message):
+    member = await client.get_chat_member(message.chat.id, message.from_user.id)
+    return member.status in (enums.ChatMemberStatus.ADMINISTRATOR, enums.ChatMemberStatus.OWNER)
 
 
 @app.on_message(filters.command("image"))
@@ -141,6 +153,70 @@ async def handle_message(client, message):
     except Exception as e:
         await message.reply_text(f"Terjadi kesalahan: {str(e)}")
         logs(__name__).error(f"Terjadi kesalahan: {str(e)}")
+
+
+@app.on_message(filters.command("tagall"))
+async def handle_tagall(client, message):
+    if not await is_admin(client, message):
+        return await message.reply("**Maaf, perintah ini hanya untuk admin. 😎**")
+
+    msg = await message.reply("Sabar ya, tunggu bentar...", quote=True)
+
+    start_time = time()
+    chat_tagged.append(message.chat.id)
+
+    logs(__name__).info(f"tagall started: {message.chat.id}")
+
+    user_tagged = [
+        mention(user.user)
+        async for user in message.chat.get_members()
+        if not (user.user.is_bot or user.user.is_deleted)
+    ]
+
+    m = message.reply_to_message or message
+    count = []
+    for output in [user_tagged[i:i + 5] for i in range(0, len(user_tagged), 5)]:
+        if message.chat.id not in chat_tagged:
+            break
+        try:
+            await m.reply(
+                f"{get_arg(message)}\n\n{' '.join(output)}",
+                quote=bool(message.reply_to_message),
+            )
+            await asyncio.sleep(3)
+            count.extend(output)
+        except FloodWait as e:
+            await asyncio.sleep(e.value)
+            await m.reply(
+                f"{get_arg(message)}\n\n{' '.join(output)}",
+                quote=bool(message.reply_to_message),
+            )
+            await asyncio.sleep(3)
+            count.extend(output)
+
+    end_time = round(time() - start_time, 2)
+    await msg.delete()
+    logs(__name__).info(f"tagall all completed: {message.chat.id}")
+    await message.reply(
+        f"<b>✅ <code>{len(count)}</code> anggota berhasil di-tag\n⌛️ Waktu yang dibutuhkan: <code>{end_time}</code> detik</b>"
+    )
+
+    try:
+        chat_tagged.remove(message.chat.id)
+    except ValueError:
+        pass
+
+
+@app.on_message(filters.command("cancel"))
+async def handle_cancel(client, message):
+    if not await is_admin(client, message):
+        return await message.reply("**Maaf, perintah ini hanya untuk admin. 😎**")
+
+    if message.chat.id not in chat_tagged:
+        return await message.delete()
+    chat_tagged.remove(message.chat.id)
+    logs(__name__).info(f"tagall cancel: {message.chat.id}")
+    return await message.reply("**TagAll berhasil dibatalkan**")
 
 
 app.run()
