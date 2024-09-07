@@ -182,6 +182,7 @@ async def handle_tagall(client, message):
                 f"{get_arg(message)}\n\n{' '.join(output)}",
                 quote=bool(message.reply_to_message),
             )
+            await client.send_chat_action(chat_id=message.chat.id, action=ChatAction.TYPING)
             await asyncio.sleep(3)
             count.extend(output)
         except FloodWait as e:
