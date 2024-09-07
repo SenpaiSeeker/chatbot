@@ -1,6 +1,6 @@
 import logging
 import os
-import sys
+import sys, requests
 
 from dotenv import load_dotenv
 from io import BytesIO
@@ -85,9 +85,11 @@ def get_text(message):
 
 
 def get_arg(message):
-    if message.reply_to_message and len(message.command) < 2:
-        return message.reply_to_message.text or message.reply_to_message.caption or ""
-    return message.text.split(None, 1)[1] if len(message.command) > 1 else ""
+    return (
+        message.reply_to_message.text or message.reply_to_message.caption or ""
+        if message.reply_to_message and len(message.command) < 2 
+        else " ".join(message.command[1:])
+    )
 
 
 
