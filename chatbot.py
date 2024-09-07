@@ -86,11 +86,9 @@ def get_text(message):
 
 
 def get_arg(message):
-    return (
-        message.reply_to_message.text or message.reply_to_message.caption or ""
-        if message.reply_to_message and len(message.command) < 2
-        else " ".join(message.command[1:])
-    )
+    if message.reply_to_message and len(message.command) < 2:
+        return message.reply_to_message.text or message.reply_to_message.caption or ""
+    return message.text.split(None, 1)[1] if len(message.command) > 1 else ""
 
 
 async def send_large_output(message, output):
