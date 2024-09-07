@@ -72,9 +72,6 @@ async def handle_chatbot(client, message):
     global chatbot_enabled
     command = message.text.split()[1].lower() if len(message.text.split()) > 1 else ""
 
-    if not await is_admin(client, message):
-        return await message.reply("Maaf, perintah ini hanya untuk admin. 😎")
-
     if command == "on":
         chatbot_enabled[message.chat.id] = True
         await message.reply_text("🤖 Chatbot telah diaktifkan.")
