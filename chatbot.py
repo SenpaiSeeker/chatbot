@@ -177,13 +177,13 @@ async def handle_tagall(client, message):
     for output in [user_tagged[i : i + 5] for i in range(0, len(user_tagged), 5)]:
         if message.chat.id not in chat_tagged:
             break
+        await asyncio.sleep(3)
+        await client.send_chat_action(chat_id=message.chat.id, action=ChatAction.TYPING)
         try:
             await m.reply(
                 f"{get_arg(message)}\n\n{' '.join(output)}",
                 quote=bool(message.reply_to_message),
             )
-            await client.send_chat_action(chat_id=message.chat.id, action=ChatAction.TYPING)
-            await asyncio.sleep(3)
             count.extend(output)
         except FloodWait as e:
             await asyncio.sleep(e.value)
