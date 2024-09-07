@@ -107,11 +107,12 @@ async def handle_image(client, message):
     if not prompt:
         return await message.reply("/image (prompt text)")
 
-    await client.send_chat_action(chat_id=message.chat.id, action=ChatAction.UPLOAD_PHOTO)
+    await client.send_chat_action(chat_id=message.chat.id, action=ChatAction.TYPING)
 
     url = f"https://widipe.com/v1/text2img?text={prompt}"
     res = requests.get(url, headers={"accept": "image/jpeg"})
 
+    await client.send_chat_action(chat_id=message.chat.id, action=ChatAction.UPLOAD_PHOTO)
     if res.status_code == 200:
         image = BytesIO(res.content)
         image.name = f"{message.id}_{client.me.id}.jpg"
