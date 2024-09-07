@@ -1,9 +1,10 @@
 import logging
-import os, io
-import sys, requests
-
-from dotenv import load_dotenv
+import os
+import sys
 from io import BytesIO
+
+import requests
+from dotenv import load_dotenv
 from mytools import ChatBot
 from pyrogram import Client, filters
 from pyrogram.enums import ChatAction
@@ -87,10 +88,9 @@ def get_text(message):
 def get_arg(message):
     return (
         message.reply_to_message.text or message.reply_to_message.caption or ""
-        if message.reply_to_message and len(message.command) < 2 
+        if message.reply_to_message and len(message.command) < 2
         else " ".join(message.command[1:])
     )
-
 
 
 async def send_large_output(message, output):
@@ -110,17 +110,18 @@ async def handle_image(client, message):
         return await message.reply("/image (prompt text)")
 
     await client.send_chat_action(chat_id=message.chat.id, action=ChatAction.UPLOAD_PHOTO)
-    
+
     url = f"https://widipe.com/v1/text2img?text={prompt}"
     res = requests.get(url, headers={"accept": "image/jpeg"})
-    
+
     if res.status_code == 200:
         image = BytesIO(res.content)
         image.name = f"{message.id}_{client.me.id}.jpg"
         await message.reply_photo(image)
     else:
         await message.reply("Failed to generate image.")
-        
+
+
 @app.on_message(filters.text & ~filters.command(["start", "chatbot", "image"]))
 async def handle_message(client, message):
     global chatbot_enabled
