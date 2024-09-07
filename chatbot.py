@@ -1,5 +1,5 @@
 import logging
-import os
+import os, io
 import sys, requests
 
 from dotenv import load_dotenv
@@ -115,7 +115,7 @@ async def handle_image(client, message):
     res = requests.get(url, headers={"accept": "image/jpeg"})
     
     if res.status_code == 200:
-        image = io.BytesIO(res.content)
+        image = BytesIO(res.content)
         image.name = f"{message.id}_{client.me.id}.jpg"
         await message.reply_photo(image)
     else:
