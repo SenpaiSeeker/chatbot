@@ -8,9 +8,9 @@ from time import time
 
 import requests
 from dotenv import load_dotenv
-from mytools import Api, User 
+from mytools import Api, User
 from pyrogram import Client, emoji, filters
-from pyrogram.enums import ChatAction, ChatMemberStatus
+from pyrogram.enums import ChatAction
 from pyrogram.errors import FloodWait
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
@@ -35,8 +35,6 @@ chatbot_enabled = {}
 chatbot = Api(name=BOT_NAME, dev=DEV_NAME)
 
 chat_tagged = []
-
-
 
 
 def inline(buttons, row_width=2):
