@@ -8,7 +8,7 @@ from time import time
 
 import requests
 from dotenv import load_dotenv
-from mytools import ChatBot
+from mytools import Api
 from pyrogram import Client, emoji, filters
 from pyrogram.enums import ChatAction, ChatMemberStatus
 from pyrogram.errors import FloodWait
@@ -32,7 +32,7 @@ DEV_NAME = os.getenv("DEV_NAME")
 app = Client(name=BOT_TOKEN.split(":")[0], api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
 chatbot_enabled = {}
-chatbot = ChatBot(name=BOT_NAME, dev=DEV_NAME)
+chatbot = Api(name=BOT_NAME, dev=DEV_NAME)
 
 chat_tagged = []
 
@@ -147,7 +147,7 @@ async def handle_message(client, message):
     await client.send_chat_action(chat_id=message.chat.id, action=ChatAction.TYPING)
 
     try:
-        result = chatbot.Text(user_message)
+        result = chatbot.ChatBot(user_message, message.from_user.id)
         await send_large_output(message, result)
     except Exception as e:
         await message.reply_text(f"Terjadi kesalahan: {str(e)}")
