@@ -85,12 +85,6 @@ async def handle_chatbot(client, message):
         await message.reply_text("❓ Perintah tidak dikenal. Gunakan /chatbot on atau /chatbot off.")
 
 
-def get_text(message):
-    reply_text = message.reply_to_message.text if message.reply_to_message else ""
-    user_text = message.text
-    return f"anda: {user_text}\n\nsaya: {reply_text}" if reply_text and user_text else reply_text + user_text
-
-
 def get_arg(message):
     if message.reply_to_message and len(message.command) < 2:
         return message.reply_to_message.text or message.reply_to_message.caption or ""
@@ -141,7 +135,7 @@ async def handle_message(client, message):
     if not chatbot_enabled.get(message.chat.id, False):
         return
 
-    user_message = get_text(message)
+    user_message = message.text
     logs(__name__).info(f"Menerima pesan dari pengguna dengan ID: {message.from_user.id}")
 
     await client.send_chat_action(chat_id=message.chat.id, action=ChatAction.TYPING)
