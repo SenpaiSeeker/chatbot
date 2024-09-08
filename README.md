@@ -6,7 +6,7 @@ git clone https://github.com/SenpaiSeeker/chatbot && cd chatbot
 ```
 - KEDUA INSTALL DEPENDENCIES NYA
 ```
-pip3 install requirements.txt
+pip3 install -r requirements.txt
 ```
 - KETIGA BUAT ENVIRONMENT
 ```bash
