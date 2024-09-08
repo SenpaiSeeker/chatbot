@@ -1,16 +1,15 @@
 import asyncio
 import logging
 import os
+import random
 import sys
-import random 
 from io import BytesIO
 from time import time
 
 import requests
 from dotenv import load_dotenv
 from mytools import ChatBot
-from pyrogram import emoji
-from pyrogram import Client, filters
+from pyrogram import Client, emoji, filters
 from pyrogram.enums import ChatAction, ChatMemberStatus
 from pyrogram.errors import FloodWait
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
@@ -173,7 +172,7 @@ async def handle_tagall(client, message):
         async for user in message.chat.get_members()
         if not (user.user.is_bot or user.user.is_deleted)
     ]
-    
+
     m = message.reply_to_message or message
     count = []
     for output in [user_tagged[i : i + 5] for i in range(0, len(user_tagged), 5)]:
