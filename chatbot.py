@@ -129,7 +129,7 @@ async def handle_image(client, message):
         logs(__name__).error("gagal membuat foto")
 
 
-@app.on_message(filters.text & ~filters.bot & ~filters.me ~filters.command(["start", "chatbot", "image", "tagall", "cancel"]))
+@app.on_message(filters.text & ~filters.bot & ~filters.me & ~filters.command(["start", "chatbot", "image", "tagall", "cancel"]))
 async def handle_message(client, message):
     global chatbot_enabled
     if not chatbot_enabled.get(message.chat.id, False):
