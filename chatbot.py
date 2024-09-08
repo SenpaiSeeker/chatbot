@@ -8,7 +8,7 @@ from time import time
 
 import requests
 from dotenv import load_dotenv
-from mytools import Api, User
+from mytools import Api, User, Button 
 from pyrogram import Client, emoji, filters
 from pyrogram.enums import ChatAction
 from pyrogram.errors import FloodWait
@@ -37,14 +37,6 @@ chatbot = Api(name=BOT_NAME, dev=DEV_NAME)
 chat_tagged = []
 
 
-def inline(buttons, row_width=2):
-    keyboard = [
-        [InlineKeyboardButton(**button_data) for button_data in buttons[i : i + row_width]]
-        for i in range(0, len(buttons), row_width)
-    ]
-    return InlineKeyboardMarkup(keyboard)
-
-
 @app.on_message(filters.command("start"))
 async def start(client, message):
     user = message.from_user
@@ -53,7 +45,7 @@ async def start(client, message):
         {"text": "channel", "url": "https://t.me/FakeCodeX"},
         {"text": "repository", "url": "https://github.com/SenpaiSeeker/chatbot"},
     ]
-    reply_markup = inline(keyboard)
+    reply_markup = Button.inline(keyboard)
 
     await message.reply_text(
         f"**👋 Hai {User.mention(user)}! Kenalin nih, gue bot pintar berbasis Python dari mytoolsID. Gue siap bantu jawab semua pertanyaan lo.\n\nMau aktifin bot? Ketik aja /chatbot on**",
