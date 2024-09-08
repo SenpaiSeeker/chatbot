@@ -8,7 +8,7 @@ from time import time
 
 import requests
 from dotenv import load_dotenv
-from mytools import Api
+from mytools import Api, User 
 from pyrogram import Client, emoji, filters
 from pyrogram.enums import ChatAction, ChatMemberStatus
 from pyrogram.errors import FloodWait
@@ -58,7 +58,7 @@ async def start(client, message):
     reply_markup = inline(keyboard)
 
     await message.reply_text(
-        f"**👋 Hai {mention(user)}! Kenalin nih, gue bot pintar berbasis Python dari mytoolsID. Gue siap bantu jawab semua pertanyaan lo.\n\nMau aktifin bot? Ketik aja /chatbot on**",
+        f"**👋 Hai {User.mention(user)}! Kenalin nih, gue bot pintar berbasis Python dari mytoolsID. Gue siap bantu jawab semua pertanyaan lo.\n\nMau aktifin bot? Ketik aja /chatbot on**",
         reply_markup=reply_markup,
     )
     logs(__name__).info("Mengirim pesan selamat datang")
@@ -95,11 +95,6 @@ async def send_large_output(message, output):
         with BytesIO(str.encode(str(output))) as out_file:
             out_file.name = "result.txt"
             await message.reply_document(document=out_file)
-
-
-async def is_admin(client, message):
-    member = await client.get_chat_member(message.chat.id, message.from_user.id)
-    return member.status in (ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER)
 
 
 @app.on_message(filters.command("image"))
@@ -146,7 +141,7 @@ async def handle_message(client, message):
 
 @app.on_message(filters.command("tagall"))
 async def handle_tagall(client, message):
-    if not await is_admin(client, message):
+    if not await User.get_admin(message):
         return await message.reply("**Maaf, perintah ini hanya untuk admin. 😎**")
 
     msg = await message.reply("Sabar ya, tunggu bentar...", quote=True)
@@ -199,7 +194,7 @@ async def handle_tagall(client, message):
 
 @app.on_message(filters.command("cancel"))
 async def handle_cancel(client, message):
-    if not await is_admin(client, message):
+    if not await User.get_admin(message):
         return await message.reply("**Maaf, perintah ini hanya untuk admin. 😎**")
 
     if message.chat.id not in chat_tagged:
