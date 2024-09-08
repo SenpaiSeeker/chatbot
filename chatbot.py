@@ -8,11 +8,10 @@ from time import time
 
 import requests
 from dotenv import load_dotenv
-from mytools import Api, User, Button 
+from mytools import Api, Button, User
 from pyrogram import Client, emoji, filters
 from pyrogram.enums import ChatAction
 from pyrogram.errors import FloodWait
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 load_dotenv(sys.argv[1])
 
