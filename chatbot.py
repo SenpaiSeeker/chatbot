@@ -37,10 +37,6 @@ chatbot = Api(name=BOT_NAME, dev=DEV_NAME)
 chat_tagged = []
 
 
-def mention(user):
-    name = f"{user.first_name} {user.last_name}" if user.last_name else user.first_name
-    link = f"tg://user?id={user.id}"
-    return f"[{name}]({link})"
 
 
 def inline(buttons, row_width=2):
