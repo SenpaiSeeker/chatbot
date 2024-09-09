@@ -112,7 +112,7 @@ async def handle_image(client, message):
 @app.on_message(filters.command("clear"))
 async def handle_clear_message(client, message):
     clear = chatbot.clear_chat_history(message.from_user.id)
-    await message.reply(clear2)
+    await message.reply(clear)
 
 
 @app.on_message(filters.text & ~filters.bot & ~filters.me & ~filters.command(["start", "chatbot", "image", "tagall", "cancel", "clear"]))
