@@ -115,7 +115,9 @@ async def handle_clear_message(client, message):
     await message.reply(clear)
 
 
-@app.on_message(filters.text & ~filters.bot & ~filters.me & ~filters.command(["start", "chatbot", "image", "tagall", "cancel", "clear"]))
+@app.on_message(
+    filters.text & ~filters.bot & ~filters.me & ~filters.command(["start", "chatbot", "image", "tagall", "cancel", "clear"])
+)
 async def handle_message(client, message):
     global chatbot_enabled
     if not chatbot_enabled.get(message.chat.id, False):
