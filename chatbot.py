@@ -109,7 +109,13 @@ async def handle_image(client, message):
         logs(__name__).error("gagal membuat foto")
 
 
-@app.on_message(filters.text & ~filters.bot & ~filters.me & ~filters.command(["start", "chatbot", "image", "tagall", "cancel"]))
+@app.on_message(filters.command("clear"))
+async def handle_clear_message(client, message):
+    clear = chatbot.clear_chat_history(message.from_user.id)
+    await message.reply(clear2)
+
+
+@app.on_message(filters.text & ~filters.bot & ~filters.me & ~filters.command(["start", "chatbot", "image", "tagall", "cancel", "clear"]))
 async def handle_message(client, message):
     global chatbot_enabled
     if not chatbot_enabled.get(message.chat.id, False):
