@@ -110,7 +110,7 @@ async def handle_refresh_callback(client, callback_query):
 
 @app.on_message(filters.command("image"))
 async def handle_image(client, message):
-    prompt = get_arg(message)
+    prompt = Handler.get_arg(message)
     if not prompt:
         return await message.reply("/image (prompt text)")
 
