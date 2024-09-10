@@ -6,6 +6,8 @@ import sys
 from time import time
 
 import requests
+
+from io import BytesIO
 from dotenv import load_dotenv
 from mytools import Api, Button, User, Handler
 from pyrogram import Client, emoji, filters
