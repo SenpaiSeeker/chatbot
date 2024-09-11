@@ -106,8 +106,8 @@ async def handle_refresh_callback(client, callback_query):
     user_id, message_id = callback_query.data.split("_")
 
     if user_id != callback_query.from_user.id:
-        return await callback_query.answer("Maaf, tombol ini bukan untukmu",  True)
-    
+        return await callback_query.answer("Maaf, tombol ini bukan untukmu", True)
+
     original_message = await client.get_messages(callback_query.message.chat.id, message_id)
 
     user_message = Handler.get_text(original_message)
