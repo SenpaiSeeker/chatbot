@@ -31,7 +31,6 @@ DEV_NAME = os.getenv("DEV_NAME")
 app = Client(name=BOT_TOKEN.split(":")[0], api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
 chatbot_enabled = {}
-chatbot = Api(name=BOT_NAME, dev=DEV_NAME)
 chat_tagged = []
 
 
@@ -76,7 +75,7 @@ async def handle_clear_message(client, message):
 
 
 @app.on_message(
-    filters.text & ~filters.bot & ~filters.me & ~filters.command(["start", "chatbot", "image", "tagall", "cancel", "clear"])
+    filters.text & ~filters.bot & ~filters.me & ~filters.command(["start", "chatbot", "image", "tagall", "cancel", "clear", "khodam"])
 )
 async def handle_message(client, message):
     global chatbot_enabled
@@ -89,9 +88,29 @@ async def handle_message(client, message):
     await client.send_chat_action(chat_id=message.chat.id, action=ChatAction.TYPING)
 
     try:
-        result = chatbot.ChatBot(user_message, message.from_user.id)
+        result = Api(name=BOT_NAME, dev=DEV_NAME).ChatBot(user_message, message.from_user.id)
         get_logger(__name__).info("Mengirim output besar ke pengguna")
         await Handler.send_large_output(message, result)
+    except Exception as e:
+        await message.reply_text(f"Terjadi kesalahan: {str(e)}")
+        get_logger(__name__).error(f"Terjadi kesalahan: {str(e)}")
+
+
+@app.on_message(filters.command("khodam"))
+async def handle_khodam(client, message):
+    user = User.get_id(message)
+
+    if not user:
+        return await message.reply("**harap berikan nama atau reply ke pengguna untuk dicek khodam nya**")
+
+    get_name = await client.get_users(user)
+    full_name = User.mention(get_name)
+    get_logger(__name__).info(f"Permintaan mengecek khodam: {get_name.first_name}")
+
+    try:
+        result = Api(name=BOT_NAME, dev=DEV_NAME, is_khodam=True).KhodamCheck(full_name)
+        await Handler.send_large_output(message, result)
+        get_logger(__name__).info(f"Berhasil mendapatkan info khodam: {get_name.first_name}")
     except Exception as e:
         await message.reply_text(f"Terjadi kesalahan: {str(e)}")
         get_logger(__name__).error(f"Terjadi kesalahan: {str(e)}")
