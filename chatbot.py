@@ -8,7 +8,7 @@ from time import time
 
 import requests
 from dotenv import load_dotenv
-from mytools import Api, Button, Handler, User, Translate
+from mytools import Api, Button, Handler, Translate, User
 from pyrogram import Client, emoji, filters
 from pyrogram.enums import ChatAction
 from pyrogram.errors import FloodWait
@@ -17,8 +17,10 @@ load_dotenv(sys.argv[1])
 
 logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
 
+
 def get_logger(name):
     return logging.getLogger(name)
+
 
 API_ID = os.getenv("API_ID")
 API_HASH = os.getenv("API_HASH")
@@ -100,7 +102,7 @@ async def handle_message(client, message):
 @app.on_message(filters.command("tts"))
 async def handle_tts(client, message):
     msg = await message.reply("**Tunggu bentar ya...**")
-    
+
     text = Handler.get_arg(message)
     if not text:
         return await msg.edit("/tts (replyText/typingText)")
