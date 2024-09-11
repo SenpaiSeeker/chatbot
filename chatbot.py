@@ -111,7 +111,7 @@ async def handle_tts(client, message):
 
     try:
         tts = trans.TextToSpeech(text)
-        await message.reply_audio(tts)
+        await message.reply_voice(tts)
         os.remove(tts)
         get_logger(__name__).info(f"Berhasil mengirimkan TTS ke user ID {message.from_user.id}")
         await msg.delete()
