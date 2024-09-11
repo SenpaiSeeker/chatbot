@@ -8,7 +8,7 @@ from time import time
 
 import requests
 from dotenv import load_dotenv
-from mytools import Api, Button, Handler, User
+from mytools import Api, Button, Handler, User, Translate
 from pyrogram import Client, emoji, filters
 from pyrogram.enums import ChatAction
 from pyrogram.errors import FloodWait
@@ -17,10 +17,8 @@ load_dotenv(sys.argv[1])
 
 logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
 
-
 def get_logger(name):
     return logging.getLogger(name)
-
 
 API_ID = os.getenv("API_ID")
 API_HASH = os.getenv("API_HASH")
@@ -30,9 +28,10 @@ DEV_NAME = os.getenv("DEV_NAME")
 
 app = Client(name=BOT_TOKEN.split(":")[0], api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
-chatbot_enabled = {}
+chatbot_enabled, chat_tagged = {}, []
 chatbot = Api(name=BOT_NAME, dev=DEV_NAME)
-chat_tagged = []
+trans = Translate()
+khodam = Api(name=BOT_NAME, dev=DEV_NAME, is_khodam=True)
 
 
 @app.on_message(filters.command("start"))
@@ -54,17 +53,16 @@ async def start(client, message):
 
 @app.on_message(filters.command("chatbot"))
 async def handle_chatbot(client, message):
-    global chatbot_enabled
     command = message.text.split()[1].lower() if len(message.text.split()) > 1 else ""
 
     if command == "on":
         chatbot_enabled[message.chat.id] = True
         await message.reply_text("🤖 Chatbot telah diaktifkan.")
-        get_logger(__name__).info("Chatbot diaktifkan")
+        get_logger(__name__).info(f"Chatbot diaktifkan di chat {message.chat.id}")
     elif command == "off":
         chatbot_enabled[message.chat.id] = False
         await message.reply_text("🚫 Chatbot telah dinonaktifkan.")
-        get_logger(__name__).info("Chatbot dinonaktifkan")
+        get_logger(__name__).info(f"Chatbot dinonaktifkan di chat {message.chat.id}")
     else:
         await message.reply_text("❓ Perintah tidak dikenal. Gunakan /chatbot on atau /chatbot off.")
 
@@ -79,10 +77,9 @@ async def handle_clear_message(client, message):
     filters.text
     & ~filters.bot
     & ~filters.me
-    & ~filters.command(["start", "chatbot", "image", "tagall", "cancel", "clear", "khodam"])
+    & ~filters.command(["start", "chatbot", "image", "tagall", "cancel", "clear", "khodam", "tts"])
 )
 async def handle_message(client, message):
-    global chatbot_enabled
     if not chatbot_enabled.get(message.chat.id, False):
         return
 
@@ -100,6 +97,27 @@ async def handle_message(client, message):
         get_logger(__name__).error(f"Terjadi kesalahan: {str(e)}")
 
 
+@app.on_message(filters.command("tts"))
+async def handle_tts(client, message):
+    msg = await message.reply("**Tunggu bentar ya...**")
+    
+    text = Handler.get_arg(message)
+    if not text:
+        return await msg.edit("/tts (replyText/typingText)")
+
+    get_logger(__name__).info(f"Menerima permintaan TTS dari user ID {message.from_user.id}")
+
+    try:
+        tts = trans.TextToSpeech(text)
+        await message.reply_voice(tts)
+        os.remove(tts)
+        get_logger(__name__).info(f"Berhasil mengirimkan TTS ke user ID {message.from_user.id}")
+        await msg.delete()
+    except Exception as e:
+        get_logger(__name__).error(f"Error generating TTS: {e}")
+        return await msg.edit(f"Error: {str(e)}")
+
+
 @app.on_message(filters.command("khodam"))
 async def handle_khodam(client, message):
     msg = await message.reply("**Sedang memproses....**")
@@ -113,7 +131,7 @@ async def handle_khodam(client, message):
     get_logger(__name__).info(f"Permintaan mengecek khodam: {get_name.first_name}")
 
     try:
-        result = Api(name=BOT_NAME, dev=DEV_NAME, is_khodam=True).KhodamCheck(full_name)
+        result = khodam.KhodamCheck(full_name)
         await Handler.send_large_output(message, result)
         await msg.delete()
         get_logger(__name__).info(f"Berhasil mendapatkan info khodam: {get_name.first_name}")
