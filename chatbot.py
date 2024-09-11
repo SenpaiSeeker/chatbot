@@ -104,7 +104,7 @@ async def handle_message(client, message):
 @app.on_callback_query(filters.regex(r"refresh_(\d+)"))
 async def handle_refresh_callback(client, callback_query):
     message_id = int(callback_query.data.split("_")[1])
-    original_message = await callback_query.message.chat.get_message(message_id)
+    original_message = await client.get_messages(callback_query.message.chat.id, message_id)
 
     user_message = Handler.get_text(original_message)
     get_logger(__name__).info(f"Refreshing message ID: {message_id}")
