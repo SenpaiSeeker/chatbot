@@ -70,7 +70,7 @@ async def handle_chatbot(client, message):
 
 @app.on_message(filters.command("clear"))
 async def handle_clear_message(client, message):
-    clear = chatbot.clear_chat_history(message.from_user.id)
+    clear = Api(name=BOT_NAME, dev=DEV_NAME).clear_chat_history(message.from_user.id)
     await message.reply(clear)
 
 
