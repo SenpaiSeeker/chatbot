@@ -96,33 +96,6 @@ async def handle_message(client, message):
         await message.reply_text(f"Terjadi kesalahan: {str(e)}")
         get_logger(__name__).error(f"Terjadi kesalahan: {str(e)}")
 
-    keyboard = [{"text": "🔄 Refresh 🔄", "callback_data": f"refresh_{message.id}_{message.from_user.id}"}]
-    reply_markup = Button.inline(keyboard)
-    await message.reply_text("**Klik tombol di bawah ini untuk mengulang pertanyaan:**", reply_markup=reply_markup)
-
-
-@app.on_callback_query(filters.regex(r"refresh_(\d+)"))
-async def handle_refresh_callback(client, callback_query):
-    command, message_id, user_id = callback_query.data.split("_")
-
-    if int(user_id) != callback_query.from_user.id:
-        await callback_query.answer("Maaf, tombol ini bukan untukmu", True)
-    else:
-        original_message = await client.get_messages(callback_query.message.chat.id, message_id)
-
-        user_message = Handler.get_text(original_message)
-        get_logger(__name__).info(f"Refreshing message ID: {message_id}")
-
-        await client.send_chat_action(chat_id=callback_query.message.chat.id, action=ChatAction.TYPING)
-        try:
-            result = chatbot.ChatBot(user_message, callback_query.from_user.id)
-            keyboard = [{"text": "🔄 Refresh 🔄", "callback_data": f"refresh_{message_id}_{callback_query.from_user.id}"}]
-            reply_markup = Button.inline(keyboard)
-            await callback_query.message.reply_text(result, reply_markup=reply_markup)
-        except Exception as e:
-            await callback_query.message.reply_text(f"Terjadi kesalahan: {str(e)}")
-            get_logger(__name__).error(f"Terjadi kesalahan: {str(e)}")
-
 
 @app.on_message(filters.command("image"))
 async def handle_image(client, message):
