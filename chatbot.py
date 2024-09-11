@@ -31,6 +31,7 @@ DEV_NAME = os.getenv("DEV_NAME")
 app = Client(name=BOT_TOKEN.split(":")[0], api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
 chatbot_enabled = {}
+chatbot = Api(name=BOT_NAME, dev=DEV_NAME)
 chat_tagged = []
 
 
@@ -70,7 +71,7 @@ async def handle_chatbot(client, message):
 
 @app.on_message(filters.command("clear"))
 async def handle_clear_message(client, message):
-    clear = Api(name=BOT_NAME, dev=DEV_NAME).clear_chat_history(message.from_user.id)
+    clear = chatbot.clear_chat_history(message.from_user.id)
     await message.reply(clear)
 
 
@@ -91,7 +92,7 @@ async def handle_message(client, message):
     await client.send_chat_action(chat_id=message.chat.id, action=ChatAction.TYPING)
 
     try:
-        result = Api(name=BOT_NAME, dev=DEV_NAME).ChatBot(user_message, message.from_user.id)
+        result = chatbot.ChatBot(user_message, message.from_user.id)
         get_logger(__name__).info("Mengirim output besar ke pengguna")
         await Handler.send_large_output(message, result)
     except Exception as e:
