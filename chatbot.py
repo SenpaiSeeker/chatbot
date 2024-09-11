@@ -75,7 +75,10 @@ async def handle_clear_message(client, message):
 
 
 @app.on_message(
-    filters.text & ~filters.bot & ~filters.me & ~filters.command(["start", "chatbot", "image", "tagall", "cancel", "clear", "khodam"])
+    filters.text
+    & ~filters.bot
+    & ~filters.me
+    & ~filters.command(["start", "chatbot", "image", "tagall", "cancel", "clear", "khodam"])
 )
 async def handle_message(client, message):
     global chatbot_enabled
