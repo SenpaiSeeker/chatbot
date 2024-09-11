@@ -112,7 +112,9 @@ async def handle_refresh_callback(client, callback_query):
     await client.send_chat_action(chat_id=callback_query.message.chat.id, action=ChatAction.TYPING)
     try:
         result = chatbot.ChatBot(user_message, callback_query.from_user.id)
-        await Handler.send_large_output(callback_query.message, result)
+        keyboard = [{"text": "🔄 Refresh 🔄", "callback_data": f"refresh_{message_id}"}]
+        reply_markup = Button.inline(keyboard)
+        await callback_query.message.reply_text(result, reply_markup=reply_markup)
     except Exception as e:
         await callback_query.message.reply_text(f"Terjadi kesalahan: {str(e)}")
         get_logger(__name__).error(f"Terjadi kesalahan: {str(e)}")
