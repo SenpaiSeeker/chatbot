@@ -83,10 +83,7 @@ async def handle_message(client, message):
     if not chatbot_enabled.get(message.chat.id, False):
         return
 
-    get = await client.get_users(message.from_user.id)
-    data = f"namaku: {get.first_name} {get.last_name} - "
-
-    user_message = data + Handler.get_text(message, is_chatbot=True)
+    user_message = {User.mention(message.from_user): Handler.get_text(message, is_chatbot=True)}
     get_logger(__name__).info(f"Menerima pesan dari pengguna dengan ID: {message.from_user.id}")
 
     await client.send_chat_action(chat_id=message.chat.id, action=ChatAction.TYPING)
