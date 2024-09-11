@@ -25,11 +25,13 @@ def get_logger(name):
 API_ID = os.getenv("API_ID")
 API_HASH = os.getenv("API_HASH")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
+BOT_NAME = os.getenv("BOT_NAME")
+DEV_NAME = os.getenv("DEV_NAME")
 
 app = Client(name=BOT_TOKEN.split(":")[0], api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
 chatbot_enabled = {}
-chatbot = Api()
+chatbot = Api(name=BOT_NAME, dev=DEV_NAME)
 chat_tagged = []
 
 
