@@ -103,7 +103,7 @@ async def handle_message(client, message):
 
 @app.on_callback_query(filters.regex(r"refresh_(\d+)"))
 async def handle_refresh_callback(client, callback_query):
-    message_id, user_id = callback_query.data.split("_")
+    command, message_id, user_id = callback_query.data.split("_")
 
     if user_id != callback_query.from_user.id:
         return await callback_query.answer("Maaf, tombol ini bukan untukmu", True)
