@@ -105,7 +105,7 @@ async def handle_khodam(client, message):
     user = await User.get_id(message)
 
     if not user:
-        return await msg.edit("**harap berikan nama atau reply ke pengguna untuk dicek khodam nya**")
+        return await msg.edit("**harap berikan username atau reply ke pengguna untuk dicek khodam nya**")
 
     get_name = await client.get_users(user)
     full_name = User.mention(get_name)
