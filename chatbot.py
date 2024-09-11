@@ -98,7 +98,7 @@ async def handle_message(client, message):
 
     keyboard = [{"text": "🔄 Refresh 🔄", "callback_data": f"refresh_{message.id}"}]
     reply_markup = Button.inline(keyboard)
-    return await message.reply_text("Klik tombol di bawah ini untuk mengulang pertanyaan:", reply_markup=reply_markup)
+    await message.reply_text("Klik tombol di bawah ini untuk mengulang pertanyaan:", reply_markup=reply_markup)
 
 
 @app.on_callback_query(filters.regex(r"refresh_(\d+)"))
