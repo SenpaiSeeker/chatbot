@@ -187,7 +187,9 @@ async def handle_tagall(client, message):
     end_time = round(time() - start_time, 2)
     await msg.delete()
     get_logger(__name__).info(f"Tagall completed: {message.chat.id}")
-    await Handler.send_large_output(message, f"<b>✅ <code>{len(count)}</code> anggota berhasil di-tag\n⌛️ Waktu yang dibutuhkan: <code>{end_time}</code> detik</b>"
+    await Handler.send_large_output(
+        message,
+        f"<b>✅ <code>{len(count)}</code> anggota berhasil di-tag\n⌛️ Waktu yang dibutuhkan: <code>{end_time}</code> detik</b>",
     )
 
     try:
