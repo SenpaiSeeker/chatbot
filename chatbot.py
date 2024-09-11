@@ -96,14 +96,14 @@ async def handle_message(client, message):
         await message.reply_text(f"Terjadi kesalahan: {str(e)}")
         get_logger(__name__).error(f"Terjadi kesalahan: {str(e)}")
 
-    keyboard = [{"text": "🔄 Refresh 🔄", "callback_data": f"refresh_{message.id}"}]
+    keyboard = [{"text": "🔄 Refresh 🔄", "callback_data": f"refresh_{message.id}_{message.from_user.id}"}]
     reply_markup = Button.inline(keyboard)
     await message.reply_text("**Klik tombol di bawah ini untuk mengulang pertanyaan:**", reply_markup=reply_markup)
 
 
 @app.on_callback_query(filters.regex(r"refresh_(\d+)"))
 async def handle_refresh_callback(client, callback_query):
-    user_id, message_id = callback_query.data.split("_")
+    message_id, user_id = callback_query.data.split("_")
 
     if user_id != callback_query.from_user.id:
         return await callback_query.answer("Maaf, tombol ini bukan untukmu", True)
