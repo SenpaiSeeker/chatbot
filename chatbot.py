@@ -84,7 +84,7 @@ async def handle_message(client, message):
         return
 
     get = await client.get_users(message.from_user.id)
-    data = f"{get.first_name} {get.last_name}: "
+    data = f"namaku: {get.first_name} {get.last_name} - "
 
     user_message = data + Handler.get_text(message, is_chatbot=True)
     get_logger(__name__).info(f"Menerima pesan dari pengguna dengan ID: {message.from_user.id}")
