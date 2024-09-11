@@ -95,16 +95,17 @@ async def handle_message(client, message):
         get_logger(__name__).info("Mengirim output besar ke pengguna")
         await Handler.send_large_output(message, result)
     except Exception as e:
-        await message.reply_text(f"Terjadi kesalahan: {str(e)}")
+        await Handler.send_large_output(message, f"Terjadi kesalahan: {str(e)}")
         get_logger(__name__).error(f"Terjadi kesalahan: {str(e)}")
 
 
 @app.on_message(filters.command("khodam"))
 async def handle_khodam(client, message):
-    user = User.get_id(message)
+    msg = await message.reply("**Sedang memproses....**")
+    user = await User.get_id(message)
 
     if not user:
-        return await message.reply("**harap berikan nama atau reply ke pengguna untuk dicek khodam nya**")
+        return await msg.edit("**harap berikan nama atau reply ke pengguna untuk dicek khodam nya**")
 
     get_name = await client.get_users(user)
     full_name = User.mention(get_name)
@@ -113,9 +114,11 @@ async def handle_khodam(client, message):
     try:
         result = Api(name=BOT_NAME, dev=DEV_NAME, is_khodam=True).KhodamCheck(full_name)
         await Handler.send_large_output(message, result)
+        await msg.delete()
         get_logger(__name__).info(f"Berhasil mendapatkan info khodam: {get_name.first_name}")
     except Exception as e:
-        await message.reply_text(f"Terjadi kesalahan: {str(e)}")
+        await Handler.send_large_output(message, f"Terjadi kesalahan: {str(e)}")
+        await msg.delete()
         get_logger(__name__).error(f"Terjadi kesalahan: {str(e)}")
 
 
@@ -134,7 +137,7 @@ async def handle_image(client, message):
         res.raise_for_status()
     except requests.RequestException as e:
         get_logger(__name__).error(f"Error generating image: {e}")
-        return await message.reply("Failed to generate image.")
+        return await Handler.send_large_output(message, "Failed to generate image.")
 
     await client.send_chat_action(chat_id=message.chat.id, action=ChatAction.UPLOAD_PHOTO)
     if res.status_code == 200:
@@ -143,16 +146,16 @@ async def handle_image(client, message):
         await message.reply_photo(image)
         get_logger(__name__).info(f"Mengirim foto ke: {message.chat.id}")
     else:
-        await message.reply("Failed to generate image.")
+        await Handler.send_large_output(message, "Failed to generate image.")
         get_logger(__name__).error("Gagal membuat foto")
 
 
 @app.on_message(filters.command("tagall"))
 async def handle_tagall(client, message):
     if not await User.get_admin(message):
-        return await message.reply("**Maaf, perintah ini hanya untuk admin. 😎**")
+        return await Handler.send_large_output(message, "**Maaf, perintah ini hanya untuk admin. 😎**")
 
-    msg = await message.reply("Sabar ya, tunggu bentar...", quote=True)
+    msg = await Handler.send_large_output(message, "Sabar ya, tunggu bentar...", quote=True)
 
     start_time = time()
     chat_tagged.append(message.chat.id)
@@ -184,8 +187,7 @@ async def handle_tagall(client, message):
     end_time = round(time() - start_time, 2)
     await msg.delete()
     get_logger(__name__).info(f"Tagall completed: {message.chat.id}")
-    await message.reply(
-        f"<b>✅ <code>{len(count)}</code> anggota berhasil di-tag\n⌛️ Waktu yang dibutuhkan: <code>{end_time}</code> detik</b>"
+    await Handler.send_large_output(message, f"<b>✅ <code>{len(count)}</code> anggota berhasil di-tag\n⌛️ Waktu yang dibutuhkan: <code>{end_time}</code> detik</b>"
     )
 
     try:
