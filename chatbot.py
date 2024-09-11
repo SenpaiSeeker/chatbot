@@ -201,13 +201,13 @@ async def handle_tagall(client, message):
 @app.on_message(filters.command("cancel"))
 async def handle_cancel(client, message):
     if not await User.get_admin(message):
-        return await message.reply("**Maaf, perintah ini hanya untuk admin. 😎**")
+        return await Handler.send_large_output(message, "**Maaf, perintah ini hanya untuk admin. 😎**")
 
     if message.chat.id not in chat_tagged:
         return await message.delete()
     chat_tagged.remove(message.chat.id)
     get_logger(__name__).info(f"Tagall cancel: {message.chat.id}")
-    return await message.reply("**TagAll berhasil dibatalkan**")
+    return await Handler.send_large_output(message, "**TagAll berhasil dibatalkan**")
 
 
 app.run()
