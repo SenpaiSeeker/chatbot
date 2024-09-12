@@ -148,13 +148,14 @@ async def handle_khodam(client, message):
 @app.on_callback_query(filters.regex(r"genImageCallback_(\d+)"))
 async def handle_image_callback(client, callback_query):
     command, user_id = callback_query.data.split("_")
+    genBingAi = ImageGen()
 
     if int(user_id) != callback_query.from_user.id:
         return await callback_query.answer("Maaf, tombol ini bukan untukmu", True)
 
     await callback_query.answer("silakan tunggu sebentar....", True)
 
-    keyboard = Button.inline([{"text": client.me.first_name, "url": f"https://t.me({client.me.username}"}])
+    keyboard = Button.inline([{"text": client.me.first_name, "url": f"https://t.me/{client.me.username}"}])
     await callback_query.edit_message_reply_markup(reply_markup=keyboard)
     
     try:
