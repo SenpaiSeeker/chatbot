@@ -126,8 +126,11 @@ async def handle_khodam(client, message):
     if not user:
         return await msg.edit("**harap berikan username atau reply ke pengguna untuk dicek khodam nya**")
 
-    get_name = await client.get_users(user)
-    full_name = User.mention(get_name)
+    try:
+        get_name = await client.get_users(user)
+        full_name = User.mention(get_name)
+    except Exception:
+        full_name = Handler.get_arg(message)
     get_logger(__name__).info(f"Permintaan mengecek khodam: {get_name.first_name}")
 
     try:
