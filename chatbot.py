@@ -134,13 +134,24 @@ async def handle_khodam(client, message):
 
     try:
         result = khodam.KhodamCheck(full_name)
-        await Handler.send_large_output(message, result)
+        button = [{"text": "🖼 generate image 🖼", "callback_data": f"genImageCallback_{message.from_user.id}"}]
+        keyboard = Button.inline(button)
+        await message.reply(result, reply_markup=keyboard)
         await msg.delete()
         get_logger(__name__).info(f"Berhasil mendapatkan info khodam: {full_name}")
     except Exception as e:
         await Handler.send_large_output(message, f"Terjadi kesalahan: {str(e)}")
         await msg.delete()
         get_logger(__name__).error(f"Terjadi kesalahan: {str(e)}")
+
+@app.on_callback_query(filters.regex(r"genImageCallback_(\d+)"))
+async def handle_image_callback(client, callback_query):
+    command, user_id = callback_query.data.split("_")
+
+    if int(user_id) != callback_query.from_user.id:
+        await callback_query.answer("Maaf, tombol ini bukan untukmu", True)
+
+    return await callback_query.message.reply_text(f"{callback_query.message.text} yuuu")
 
 
 @app.on_message(filters.command("image"))
