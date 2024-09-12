@@ -3,12 +3,10 @@ import logging
 import os
 import random
 import sys
-from io import BytesIO
 from time import time
 
-import requests
 from dotenv import load_dotenv
-from mytools import Api, Button, Handler, Translate, User, ImageGen
+from mytools import Api, Button, Handler, ImageGen, Translate, User
 from pyrogram import Client, emoji, filters
 from pyrogram.enums import ChatAction
 from pyrogram.errors import FloodWait
@@ -165,7 +163,7 @@ async def handle_image(client, message):
         os.remove(img.media)
         get_logger(__name__).info(f"file: {img.media} berhasil di bersihkan")
     return await msg.delete()
-                             
+
 
 @app.on_message(filters.command("tagall"))
 async def handle_tagall(client, message):
