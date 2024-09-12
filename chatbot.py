@@ -121,12 +121,11 @@ async def handle_tts(client, message):
 @app.on_message(filters.command("khodam"))
 async def handle_khodam(client, message):
     msg = await message.reply("**Sedang memproses....**")
-    user = await User.get_id(message)
-
-    if not user:
-        return await msg.edit("**harap berikan username atau reply ke pengguna untuk dicek khodam nya**")
-
+    
     try:
+        user = await User.get_id(message)
+        if not user:
+            return await msg.edit("**harap berikan username atau reply ke pengguna untuk dicek khodam nya**")
         get_name = await client.get_users(user)
         full_name = User.mention(get_name)
     except Exception:
