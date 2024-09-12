@@ -134,44 +134,13 @@ async def handle_khodam(client, message):
 
     try:
         result = khodam.KhodamCheck(full_name)
-        button = [{"text": "🖼 generate image 🖼", "callback_data": f"genImageCallback_{message.from_user.id}"}]
-        keyboard = Button.inline(button)
-        await message.reply(result, reply_markup=keyboard)
+        await Handler.send_large_output(message, result)
         await msg.delete()
         get_logger(__name__).info(f"Berhasil mendapatkan info khodam: {full_name}")
     except Exception as e:
         await Handler.send_large_output(message, f"Terjadi kesalahan: {str(e)}")
         await msg.delete()
         get_logger(__name__).error(f"Terjadi kesalahan: {str(e)}")
-
-
-@app.on_callback_query(filters.regex(r"genImageCallback_(\d+)"))
-async def handle_image_callback(client, callback_query):
-    command, user_id = callback_query.data.split("_")
-    genBingAi = ImageGen()
-
-    if int(user_id) != callback_query.from_user.id:
-        return await callback_query.answer("Maaf, tombol ini bukan untukmu", True)
-
-    await callback_query.answer("silakan tunggu sebentar....", True)
-
-    keyboard = Button.inline([{"text": client.me.username, "url": f"https://t.me/{client.me.username}"}])
-    await callback_query.edit_message_reply_markup(reply_markup=keyboard)
-
-    try:
-        result = await genBingAi.generate_image(
-            callback_query.message.text, caption=f"hasil generate image khodam: [message_link]({callback_query.message.link})"
-        )
-    except Exception as error:
-        return await callback_query.message.reply_text(error)
-
-    await callback_query.message.reply_media_group(result)
-    for img in result:
-        try:
-            os.remove(img.media)
-            get_logger(__name__).info(f"file: {img.media} berhasil di bersihkan")
-        except Exception:
-            pass
 
 
 @app.on_message(filters.command("image"))
