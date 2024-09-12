@@ -159,7 +159,9 @@ async def handle_image_callback(client, callback_query):
     await callback_query.edit_message_reply_markup(reply_markup=keyboard)
 
     try:
-        result = await genBingAi.generate_image(callback_query.message.text, caption=f"hasil generate image khodam: {User.mention(callback_query.from_user)}")
+        result = await genBingAi.generate_image(
+            callback_query.message.text, caption=f"hasil generate image khodam: {User.mention(callback_query.from_user)}"
+        )
     except Exception as error:
         return await callback_query.message.reply_text(error)
 
