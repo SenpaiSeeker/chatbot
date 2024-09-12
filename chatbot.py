@@ -163,7 +163,7 @@ async def handle_image(client, message):
     for img in result:
         try:
             os.remove(img.media)
-            get_logger(__name__).info(f"file: {img.media} berhasil di bersihkan") 
+            get_logger(__name__).info(f"file: {img.media} berhasil di bersihkan")
         except Exception:
             pass
 
