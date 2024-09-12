@@ -8,7 +8,7 @@ from time import time
 
 import requests
 from dotenv import load_dotenv
-from mytools import Api, Button, Handler, Translate, User
+from mytools import Api, Button, Handler, Translate, User, ImageGen
 from pyrogram import Client, emoji, filters
 from pyrogram.enums import ChatAction
 from pyrogram.errors import FloodWait
@@ -144,32 +144,28 @@ async def handle_khodam(client, message):
 
 
 @app.on_message(filters.command("image"))
-async def handle_image(client, message):
+async def handle_image(client, message)
+    msg = await Handler.send_large_output(message, "**Silahkan tunggu sebentar...**")
+    genBingAi = ImageGen()
+
     prompt = Handler.get_arg(message)
     if not prompt:
-        return await message.reply("/image (prompt text)")
+        return await msg.edit("/image (prompt text)")
 
-    get_logger(__name__).info(f"Menerima pesan dari pengguna dengan ID: {message.from_user.id}")
-    await client.send_chat_action(chat_id=message.chat.id, action=ChatAction.TYPING)
-
-    url = f"https://widipe.com/v1/text2img?text={prompt}"
+    get_logger(__name__).info(f"Memproses permintaan dari pengguna dengan ID: {message.from_user.id}")
     try:
-        res = requests.get(url, headers={"accept": "image/jpeg"})
-        res.raise_for_status()
-    except requests.RequestException as e:
-        get_logger(__name__).error(f"Error generating image: {e}")
-        return await Handler.send_large_output(message, "Failed to generate image.")
+        result = genBingAi.generate_image(prompt)
+    except Exception as error:
+        get_logger(__name__).error(f"Terjadi kesalahan: {str(error)}")
+        return await msg.edit(f"Error: {str(error)}")
 
-    await client.send_chat_action(chat_id=message.chat.id, action=ChatAction.UPLOAD_PHOTO)
-    if res.status_code == 200:
-        image = BytesIO(res.content)
-        image.name = f"{message.id}_{client.me.id}.jpg"
-        await message.reply_photo(image)
-        get_logger(__name__).info(f"Mengirim foto ke: {message.chat.id}")
-    else:
-        await Handler.send_large_output(message, "Failed to generate image.")
-        get_logger(__name__).error("Gagal membuat foto")
-
+     await message.reply_media_group(result)
+     get_logger(__name__).info(f"Berhasil mengirimkan list genBingAi ke: {message.from_user.id}")
+     for img in result:
+         os.remove(img.media)
+         get_logger(__name__).info(f"file: {img.media} berhasil di bersihkan")
+     return await msg.delete()
+                             
 
 @app.on_message(filters.command("tagall"))
 async def handle_tagall(client, message):
