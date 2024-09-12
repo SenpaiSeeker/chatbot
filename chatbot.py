@@ -121,7 +121,7 @@ async def handle_tts(client, message):
 @app.on_message(filters.command("khodam"))
 async def handle_khodam(client, message):
     msg = await message.reply("**Sedang memproses....**")
-    
+
     try:
         user = await User.get_id(message)
         if not user:
