@@ -144,7 +144,7 @@ async def handle_khodam(client, message):
 
 
 @app.on_message(filters.command("image"))
-async def handle_image(client, message)
+async def handle_image(client, message):
     msg = await Handler.send_large_output(message, "**Silahkan tunggu sebentar...**")
     genBingAi = ImageGen()
 
