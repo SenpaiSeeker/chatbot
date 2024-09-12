@@ -155,12 +155,12 @@ async def handle_image_callback(client, callback_query):
 
     await callback_query.answer("silakan tunggu sebentar....", True)
 
-    keyboard = Button.inline([{"text": client.me.first_name, "url": f"https://t.me/{client.me.username}"}])
+    keyboard = Button.inline([{"text": client.me.username, "url": f"https://t.me/{client.me.username}"}])
     await callback_query.edit_message_reply_markup(reply_markup=keyboard)
 
     try:
         result = await genBingAi.generate_image(
-            callback_query.message.text, caption=f"hasil generate image khodam: {User.mention(callback_query.from_user)}"
+            callback_query.message.text, caption=f"hasil generate image khodam: [message_link]({callback_query.message.link})"
         )
     except Exception as error:
         return await callback_query.message.reply_text(error)
