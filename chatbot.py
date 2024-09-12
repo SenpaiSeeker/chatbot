@@ -169,7 +169,7 @@ async def handle_image_callback(client, callback_query):
             get_logger(__name__).info(f"file: {img.media} berhasil di bersihkan")
         except Exception:
             pass
-    return callback_query.message.delete()
+    return await callback_query.message.delete()
 
 
 @app.on_message(filters.command("image"))
