@@ -159,7 +159,7 @@ async def handle_image_callback(client, callback_query):
     await callback_query.edit_message_reply_markup(reply_markup=keyboard)
 
     try:
-        result = genBingAi.generate_image(callback_query.message.text, caption=callback_query.message.text)
+        result = await genBingAi.generate_image(callback_query.message.text, caption=callback_query.message.text)
     except Exception as error:
         return await callback_query.message.reply_text(error)
 
@@ -184,7 +184,7 @@ async def handle_image(client, message):
 
     get_logger(__name__).info(f"Memproses permintaan dari pengguna dengan ID: {message.from_user.id}")
     try:
-        result = genBingAi.generate_image(prompt)
+        result = await genBingAi.generate_image(prompt)
     except Exception as error:
         get_logger(__name__).error(f"Terjadi kesalahan: {str(error)}")
         return await msg.edit(f"Error: {str(error)}")
