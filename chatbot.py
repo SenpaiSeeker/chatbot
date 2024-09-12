@@ -130,7 +130,7 @@ async def handle_khodam(client, message):
         full_name = User.mention(get_name)
     except Exception:
         full_name = Handler.get_arg(message)
-    get_logger(__name__).info(f"Permintaan mengecek khodam: {get_name.first_name}")
+    get_logger(__name__).info(f"Permintaan mengecek khodam: {full_name}")
 
     try:
         result = khodam.KhodamCheck(full_name)
