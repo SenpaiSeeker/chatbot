@@ -136,7 +136,7 @@ async def handle_khodam(client, message):
         result = khodam.KhodamCheck(full_name)
         await Handler.send_large_output(message, result)
         await msg.delete()
-        get_logger(__name__).info(f"Berhasil mendapatkan info khodam: {get_name.first_name}")
+        get_logger(__name__).info(f"Berhasil mendapatkan info khodam: {full_name}")
     except Exception as e:
         await Handler.send_large_output(message, f"Terjadi kesalahan: {str(e)}")
         await msg.delete()
