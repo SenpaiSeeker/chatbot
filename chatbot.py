@@ -144,6 +144,7 @@ async def handle_khodam(client, message):
         await msg.delete()
         get_logger(__name__).error(f"Terjadi kesalahan: {str(e)}")
 
+
 @app.on_callback_query(filters.regex(r"genImageCallback_(\d+)"))
 async def handle_image_callback(client, callback_query):
     command, user_id = callback_query.data.split("_")
