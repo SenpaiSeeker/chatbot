@@ -143,7 +143,7 @@ async def handle_khodam(client, message):
 
 @app.on_message(filters.command("image"))
 async def handle_image(client, message):
-    msg = await Handler.send_large_output(message, "**Silahkan tunggu sebentar...**")
+    msg = await message.reply("**Silahkan tunggu sebentar...**")
     genBingAi = ImageGen()
 
     prompt = Handler.get_arg(message)
@@ -158,7 +158,6 @@ async def handle_image(client, message):
         return await msg.edit(f"Error: {str(error)}")
 
     await message.reply_media_group(result)
-    await msg.delete()
     get_logger(__name__).info(f"Berhasil mengirimkan list genBingAi ke: {message.from_user.id}")
     for img in result:
         try:
@@ -166,6 +165,7 @@ async def handle_image(client, message):
             get_logger(__name__).info(f"file: {img.media} berhasil di bersihkan")
         except Exception:
             pass
+    return await msg.delete()
 
 
 @app.on_message(filters.command("tagall"))
