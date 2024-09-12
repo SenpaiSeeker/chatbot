@@ -2,7 +2,7 @@ import asyncio
 import logging
 import os
 import random
-import sys
+import sys, wget 
 from time import time
 
 from dotenv import load_dotenv
