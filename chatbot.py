@@ -166,6 +166,7 @@ async def handle_image(client, message):
     except Exception as error:
         return await msg.edit(error)
 
+
 @app.on_message(filters.command("tagall"))
 async def handle_tagall(client, message):
     if not await User.get_admin(message):
