@@ -56,13 +56,13 @@ async def handle_chatbot(client, message):
     command = message.text.split()[1].lower() if len(message.text.split()) > 1 else ""
 
     if command == "on":
-        chatbot_enabled[message.chat.id] = True
-        await message.reply_text("🤖 Chatbot telah diaktifkan.")
-        get_logger(__name__).info(f"Chatbot diaktifkan di chat {message.chat.id}")
+        chatbot_enabled[message.from_user.id] = True
+        await message.reply_text(f"🤖 Chatbot telah diaktifkan untuk {User.mention(message.from_user)}.")
+        get_logger(__name__).info(f"Chatbot diaktifkan untuk {User.mention(message.from_user)}")
     elif command == "off":
-        chatbot_enabled[message.chat.id] = False
-        await message.reply_text("🚫 Chatbot telah dinonaktifkan.")
-        get_logger(__name__).info(f"Chatbot dinonaktifkan di chat {message.chat.id}")
+        chatbot_enabled[message.from_user.id] = False
+        await message.reply_text(f"🚫 Chatbot telah dinonaktifkan untuk {User.mention(message.from_user)}.")
+        get_logger(__name__).info(f"Chatbot dinonaktifkan untuk {User.mention(message.from_user)}")
     else:
         await message.reply_text("❓ Perintah tidak dikenal. Gunakan /chatbot on atau /chatbot off.")
 
@@ -80,7 +80,7 @@ async def handle_clear_message(client, message):
     & ~filters.command(["start", "chatbot", "image", "tagall", "cancel", "clear", "khodam", "tts"])
 )
 async def handle_message(client, message):
-    if not chatbot_enabled.get(message.chat.id, False):
+    if not chatbot_enabled.get(message.from_user.id, False):
         return
 
     user_message = Handler.get_text(message, is_chatbot=True)
