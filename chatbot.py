@@ -162,7 +162,7 @@ async def handle_image(client, message):
     try:
         await message.reply_media_group(result)
         get_logger(__name__).info(f"Berhasil mengirimkan list genBingAi ke: {message.from_user.id}")
-        genBingAi._remove_file(result)
+        genBingAi._remove_file()
     except Exception as error:
         return await msg.edit(error)
 
