@@ -159,16 +159,12 @@ async def handle_image(client, message):
         get_logger(__name__).error(f"Terjadi kesalahan: {str(error)}")
         return await msg.edit(f"Error: {str(error)}")
 
-    await message.reply_media_group(result)
-    get_logger(__name__).info(f"Berhasil mengirimkan list genBingAi ke: {message.from_user.id}")
-    for img in result:
-        try:
-            os.remove(img.media)
-            get_logger(__name__).info(f"file: {img.media} berhasil di bersihkan")
-        except Exception:
-            pass
-    return await msg.delete()
-
+    try:
+        await message.reply_media_group(result)
+        get_logger(__name__).info(f"Berhasil mengirimkan list genBingAi ke: {message.from_user.id}")
+        genBingAi._remove_file(result)
+    except Exception as error:
+        return await msg.edit(error)
 
 @app.on_message(filters.command("tagall"))
 async def handle_tagall(client, message):
