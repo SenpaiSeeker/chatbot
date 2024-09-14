@@ -154,7 +154,7 @@ async def handle_image(client, message):
 
     get_logger(__name__).info(f"Memproses permintaan dari pengguna dengan ID: {message.from_user.id}")
     try:
-        result = await genBingAi.generate_image(prompt)
+        result = await genBingAi.generate_image(prompt, f"**🖼 ImageGen By: @{app.me.username}**")
     except Exception as error:
         get_logger(__name__).error(f"Terjadi kesalahan: {str(error)}")
         return await msg.edit(f"Error: {str(error)}")
