@@ -6,18 +6,15 @@ import sys
 from time import time
 
 from dotenv import load_dotenv
-from mytools import Api, Button, Handler, ImageGen, Translate, User
+from mytools import Api, Button, Handler, ImageGen, Translate, User, LoggerHandler
 from pyrogram import Client, emoji, filters
 from pyrogram.enums import ChatAction
 from pyrogram.errors import FloodWait
 
 load_dotenv(sys.argv[1])
 
-logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
-
-
-def get_logger(name):
-    return logging.getLogger(name)
+logger = LoggerHandler("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logger.setup_logger()
 
 
 API_ID = os.getenv("API_ID")
@@ -48,7 +45,7 @@ async def start(client, message):
         f"**👋 Hai {User.mention(user)}! Kenalin nih, gue bot pintar berbasis Python dari mytoolsID. Gue siap bantu jawab semua pertanyaan lo.\n\nMau aktifin bot? Ketik aja /chatbot on**",
         reply_markup=reply_markup,
     )
-    get_logger(__name__).info("Mengirim pesan selamat datang")
+    logger.get_logger(__name__).info("Mengirim pesan selamat datang")
 
 
 @app.on_message(filters.command("chatbot"))
@@ -58,11 +55,11 @@ async def handle_chatbot(client, message):
     if command == "on":
         chatbot_enabled[message.from_user.id] = True
         await message.reply_text(f"🤖 Chatbot telah diaktifkan untuk {User.mention(message.from_user)}.")
-        get_logger(__name__).info(f"Chatbot diaktifkan untuk {User.mention(message.from_user)}")
+        logger.get_logger(__name__).info(f"Chatbot diaktifkan untuk {User.mention(message.from_user)}")
     elif command == "off":
         chatbot_enabled[message.from_user.id] = False
         await message.reply_text(f"🚫 Chatbot telah dinonaktifkan untuk {User.mention(message.from_user)}.")
-        get_logger(__name__).info(f"Chatbot dinonaktifkan untuk {User.mention(message.from_user)}")
+        logger.get_logger(__name__).info(f"Chatbot dinonaktifkan untuk {User.mention(message.from_user)}")
     else:
         await message.reply_text("❓ Perintah tidak dikenal. Gunakan /chatbot on atau /chatbot off.")
 
@@ -84,17 +81,17 @@ async def handle_message(client, message):
         return
 
     user_message = Handler.get_text(message, is_chatbot=True)
-    get_logger(__name__).info(f"Menerima pesan dari pengguna dengan ID: {message.from_user.id}")
+    logger.get_logger(__name__).info(f"Menerima pesan dari pengguna dengan ID: {message.from_user.id}")
 
     await client.send_chat_action(chat_id=message.chat.id, action=ChatAction.TYPING)
 
     try:
         result = chatbot.ChatBot(user_message, message.from_user.id)
-        get_logger(__name__).info("Mengirim output besar ke pengguna")
+        logger.get_logger(__name__).info("Mengirim output besar ke pengguna")
         await Handler.send_large_output(message, result)
     except Exception as e:
         await Handler.send_large_output(message, f"Terjadi kesalahan: {str(e)}")
-        get_logger(__name__).error(f"Terjadi kesalahan: {str(e)}")
+        logger.get_logger(__name__).error(f"Terjadi kesalahan: {str(e)}")
 
 
 @app.on_message(filters.command("tts"))
@@ -105,16 +102,16 @@ async def handle_tts(client, message):
     if not text:
         return await msg.edit("/tts (replyText/typingText)")
 
-    get_logger(__name__).info(f"Menerima permintaan TTS dari user ID {message.from_user.id}")
+    logger.get_logger(__name__).info(f"Menerima permintaan TTS dari user ID {message.from_user.id}")
 
     try:
         tts = trans.TextToSpeech(text)
         await message.reply_voice(tts)
         os.remove(tts)
-        get_logger(__name__).info(f"Berhasil mengirimkan TTS ke user ID {message.from_user.id}")
+        logger.get_logger(__name__).info(f"Berhasil mengirimkan TTS ke user ID {message.from_user.id}")
         await msg.delete()
     except Exception as e:
-        get_logger(__name__).error(f"Error generating TTS: {e}")
+        logger.get_logger(__name__).error(f"Error generating TTS: {e}")
         return await msg.edit(f"Error: {str(e)}")
 
 
@@ -130,17 +127,17 @@ async def handle_khodam(client, message):
         full_name = User.mention(get_name)
     except Exception:
         full_name = Handler.get_arg(message)
-    get_logger(__name__).info(f"Permintaan mengecek khodam: {full_name}")
+    logger.get_logger(__name__).info(f"Permintaan mengecek khodam: {full_name}")
 
     try:
         result = khodam.KhodamCheck(full_name)
         await Handler.send_large_output(message, result)
         await msg.delete()
-        get_logger(__name__).info(f"Berhasil mendapatkan info khodam: {full_name}")
+        logger.get_logger(__name__).info(f"Berhasil mendapatkan info khodam: {full_name}")
     except Exception as e:
         await Handler.send_large_output(message, f"Terjadi kesalahan: {str(e)}")
         await msg.delete()
-        get_logger(__name__).error(f"Terjadi kesalahan: {str(e)}")
+        logger.get_logger(__name__).error(f"Terjadi kesalahan: {str(e)}")
 
 
 @app.on_message(filters.command("image"))
@@ -152,17 +149,17 @@ async def handle_image(client, message):
     if not prompt:
         return await msg.edit("/image (prompt text)")
 
-    get_logger(__name__).info(f"Memproses permintaan dari pengguna dengan ID: {message.from_user.id}")
+    logger.get_logger(__name__).info(f"Memproses permintaan dari pengguna dengan ID: {message.from_user.id}")
     try:
         result = await genBingAi.generate_image(prompt, f"**🖼 ImageGen By: @{app.me.username}**")
     except Exception as error:
-        get_logger(__name__).error(f"Terjadi kesalahan: {str(error)}")
+        logger.get_logger(__name__).error(f"Terjadi kesalahan: {str(error)}")
         return await msg.edit(f"Error: {str(error)}")
 
     try:
         await message.reply_media_group(result)
         await msg.delete()
-        get_logger(__name__).info(f"Berhasil mengirimkan list genBingAi ke: {message.from_user.id}")
+        logger.get_logger(__name__).info(f"Berhasil mengirimkan list genBingAi ke: {message.from_user.id}")
         genBingAi._remove_file(result)
     except Exception as error:
         return await msg.edit(error)
@@ -178,7 +175,7 @@ async def handle_tagall(client, message):
     start_time = time()
     chat_tagged.append(message.chat.id)
 
-    get_logger(__name__).info(f"Tagall started: {message.chat.id}")
+    logger.get_logger(__name__).info(f"Tagall started: {message.chat.id}")
 
     emoji_list = [value for key, value in emoji.__dict__.items() if not key.startswith("__")]
     user_tagged = [
@@ -204,7 +201,7 @@ async def handle_tagall(client, message):
 
     end_time = round(time() - start_time, 2)
     await msg.delete()
-    get_logger(__name__).info(f"Tagall completed: {message.chat.id}")
+    logger.get_logger(__name__).info(f"Tagall completed: {message.chat.id}")
     await Handler.send_large_output(
         message,
         f"<b>✅ <code>{len(count)}</code> anggota berhasil di-tag\n⌛️ Waktu yang dibutuhkan: <code>{end_time}</code> detik</b>",
@@ -224,7 +221,7 @@ async def handle_cancel(client, message):
     if message.chat.id not in chat_tagged:
         return await message.delete()
     chat_tagged.remove(message.chat.id)
-    get_logger(__name__).info(f"Tagall cancel: {message.chat.id}")
+    logger.get_logger(__name__).info(f"Tagall cancel: {message.chat.id}")
     return await Handler.send_large_output(message, "**TagAll berhasil dibatalkan**")
 
 
