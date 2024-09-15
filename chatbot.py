@@ -169,7 +169,7 @@ async def handle_tagall(client, message):
     if not await User.get_admin(message):
         return await Handler.send_large_output(message, "**Maaf, perintah ini hanya untuk admin. 😎**")
 
-    msg = await Handler.send_large_output(message, "Sabar ya, tunggu bentar...", quote=True)
+    msg = await message.reply("Sabar ya, tunggu bentar...", quote=True)
 
     start_time = time()
     chat_tagged.append(message.chat.id)
