@@ -49,7 +49,7 @@ async def start(client, message):
 
 
 @app.on_message(filters.command(["bencode", "bdecode"]))
-async def handle_tts(client, message):
+async def handle_encrypt(client, message):
     cmd = message.command[0]
     msg = await message.reply("**Tunggu bentar ya...**")
 
