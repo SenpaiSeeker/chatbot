@@ -204,12 +204,12 @@ async def handle_tagall(client, message):
         if message.chat.id not in chat_tagged:
             break
         try:
-            await m.reply(f"{Extract().getArg(message)}\n\n{' '.join(output)}", quote=bool(message.reply_to_message))
+            await m.reply(f"{Handler().getArg(message)}\n\n{' '.join(output)}", quote=bool(message.reply_to_message))
             await asyncio.sleep(3)
             count.extend(output)
         except FloodWait as e:
             await asyncio.sleep(e.value)
-            await m.reply(f"{Extract().getArg(message)}\n\n{' '.join(output)}", quote=bool(message.reply_to_message))
+            await m.reply(f"{Handler().getArg(message)}\n\n{' '.join(output)}", quote=bool(message.reply_to_message))
             await asyncio.sleep(3)
             count.extend(output)
 
