@@ -5,7 +5,7 @@ import sys
 from time import time
 
 from dotenv import load_dotenv
-from mytools import Api, Button, Handler, ImageGen, LoggerHandler, Translate, Extract
+from mytools import Api, Button, Handler, ImageGen, LoggerHandler, Translate, Extract, BinaryEncryptor
 from pyrogram import Client, emoji, filters
 from pyrogram.enums import ChatAction
 from pyrogram.errors import FloodWait
@@ -28,6 +28,7 @@ chatbot_enabled, chat_tagged = {}, []
 chatbot = Api(name=BOT_NAME, dev=DEV_NAME)
 trans = Translate()
 khodam = Api(name=BOT_NAME, dev=DEV_NAME, is_khodam=True)
+binary = BinaryEncryptor()
 
 
 @app.on_message(filters.command("start"))
@@ -47,18 +48,32 @@ async def start(client, message):
     logger.get_logger(__name__).info("Mengirim pesan selamat datang")
 
 
+@app.on_message(filters.command(["bencode", "bdecode"]))
+async def handle_tts(client, message):
+    cmd = message.command[0]
+    msg = await message.reply("**Tunggu bentar ya...**")
+
+    text = Handler().getArg(message)
+    if not text:
+        return await msg.edit(f"{message.text.split()[0]} balas ke text atau ketik sesuatu")
+
+    code = binary.encrypt(text) if cmd == "bencode" else binary.encrypt(text)
+    await msg.delete()
+    return await  Handler().sendLongPres(message, code)
+
+
 @app.on_message(filters.command("chatbot"))
 async def handle_chatbot(client, message):
     command = message.text.split()[1].lower() if len(message.text.split()) > 1 else ""
 
     if command == "on":
         chatbot_enabled[message.from_user.id] = True
-        await message.reply_text(f"🤖 Chatbot telah diaktifkan untuk {User.mention(message.from_user)}.")
-        logger.get_logger(__name__).info(f"Chatbot diaktifkan untuk {User.mention(message.from_user)}")
+        await message.reply_text(f"🤖 Chatbot telah diaktifkan untuk {Extract().getMention(message.from_user)}.")
+        logger.get_logger(__name__).info(f"Chatbot diaktifkan untuk {Extract().getMention(message.from_user)}")
     elif command == "off":
         chatbot_enabled[message.from_user.id] = False
-        await message.reply_text(f"🚫 Chatbot telah dinonaktifkan untuk {User.mention(message.from_user)}.")
-        logger.get_logger(__name__).info(f"Chatbot dinonaktifkan untuk {User.mention(message.from_user)}")
+        await message.reply_text(f"🚫 Chatbot telah dinonaktifkan untuk {Extract().getMention(message.from_user)}.")
+        logger.get_logger(__name__).info(f"Chatbot dinonaktifkan untuk {Extract().getMention(message.from_user)}")
     else:
         await message.reply_text("❓ Perintah tidak dikenal. Gunakan /chatbot on atau /chatbot off.")
 
