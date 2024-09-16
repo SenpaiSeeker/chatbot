@@ -181,7 +181,7 @@ async def handle_image(client, message):
 
 @app.on_message(filters.command("tagall"))
 async def handle_tagall(client, message):
-    if not await Extract.getAdmin(message):
+    if not await Extract().getAdmin(message):
         return await Handler().sendLongPres(message, "**Maaf, perintah ini hanya untuk admin. 😎**")
 
     msg = await message.reply("Sabar ya, tunggu bentar...", quote=True)
