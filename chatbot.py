@@ -5,7 +5,7 @@ import sys
 from time import time
 
 from dotenv import load_dotenv
-from mytools import Api, Button, Handler, ImageGen, LoggerHandler, Translate, User
+from mytools import Api, Button, Handler, ImageGen, LoggerHandler, Translate, Extract
 from pyrogram import Client, emoji, filters
 from pyrogram.enums import ChatAction
 from pyrogram.errors import FloodWait
@@ -38,10 +38,10 @@ async def start(client, message):
         {"text": "channel", "url": "https://t.me/FakeCodeX"},
         {"text": "repository", "url": "https://github.com/SenpaiSeeker/chatbot"},
     ]
-    reply_markup = Button.inline(keyboard)
+    reply_markup = Button().generateInlineButtonGrid(keyboard)
 
     await message.reply_text(
-        f"**👋 Hai {User.mention(user)}! Kenalin nih, gue bot pintar berbasis Python dari mytoolsID. Gue siap bantu jawab semua pertanyaan lo.\n\nMau aktifin bot? Ketik aja /chatbot on**",
+        f"**👋 Hai {Extract().getMention(user)}! Kenalin nih, gue bot pintar berbasis Python dari mytoolsID. Gue siap bantu jawab semua pertanyaan lo.\n\nMau aktifin bot? Ketik aja /chatbot on**",
         reply_markup=reply_markup,
     )
     logger.get_logger(__name__).info("Mengirim pesan selamat datang")
@@ -79,7 +79,7 @@ async def handle_message(client, message):
     if not chatbot_enabled.get(message.from_user.id, False):
         return
 
-    user_message = Handler.get_text(message, is_chatbot=True)
+    user_message = Handler().getMsg(message, is_chatbot=True)
     logger.get_logger(__name__).info(f"Menerima pesan dari pengguna dengan ID: {message.from_user.id}")
 
     await client.send_chat_action(chat_id=message.chat.id, action=ChatAction.TYPING)
@@ -87,9 +87,9 @@ async def handle_message(client, message):
     try:
         result = chatbot.ChatBot(user_message, message.from_user.id)
         logger.get_logger(__name__).info("Mengirim output besar ke pengguna")
-        await Handler.send_large_output(message, result)
+        await Handler().sendLongPres(message, result)
     except Exception as e:
-        await Handler.send_large_output(message, f"Terjadi kesalahan: {str(e)}")
+        await Handler().sendLongPres(message, f"Terjadi kesalahan: {str(e)}")
         logger.get_logger(__name__).error(f"Terjadi kesalahan: {str(e)}")
 
 
@@ -97,7 +97,7 @@ async def handle_message(client, message):
 async def handle_tts(client, message):
     msg = await message.reply("**Tunggu bentar ya...**")
 
-    text = Handler.get_arg(message)
+    text = Handler().getArg(message)
     if not text:
         return await msg.edit("/tts (replyText/typingText)")
 
@@ -119,22 +119,22 @@ async def handle_khodam(client, message):
     msg = await message.reply("**Sedang memproses....**")
 
     try:
-        user = await User.get_id(message)
+        user = await Extract().getRid(message)
         if not user:
             return await msg.edit("**harap berikan username atau reply ke pengguna untuk dicek khodam nya**")
         get_name = await client.get_users(user)
-        full_name = User.mention(get_name)
+        full_name = Extract().getMention(get_name)
     except Exception:
-        full_name = Handler.get_arg(message)
+        full_name = Handler().getArg(message)
     logger.get_logger(__name__).info(f"Permintaan mengecek khodam: {full_name}")
 
     try:
         result = khodam.KhodamCheck(full_name)
-        await Handler.send_large_output(message, result)
+        await Handler().sendLongPres(message, result)
         await msg.delete()
         logger.get_logger(__name__).info(f"Berhasil mendapatkan info khodam: {full_name}")
     except Exception as e:
-        await Handler.send_large_output(message, f"Terjadi kesalahan: {str(e)}")
+        await Handler().sendLongPres(message, f"Terjadi kesalahan: {str(e)}")
         await msg.delete()
         logger.get_logger(__name__).error(f"Terjadi kesalahan: {str(e)}")
 
@@ -144,13 +144,13 @@ async def handle_image(client, message):
     msg = await message.reply("**Silahkan tunggu sebentar...**")
     genBingAi = ImageGen()
 
-    prompt = Handler.get_arg(message)
+    prompt = Handler().getArg(message)
     if not prompt:
         return await msg.edit("/image (prompt text)")
 
     logger.get_logger(__name__).info(f"Memproses permintaan dari pengguna dengan ID: {message.from_user.id}")
     try:
-        result = await genBingAi.generate_image(prompt, f"**🖼 ImageGen By: @{app.me.username}**")
+        result = await genBingAi.generate_image(prompt)
     except Exception as error:
         logger.get_logger(__name__).error(f"Terjadi kesalahan: {str(error)}")
         return await msg.edit(f"Error: {str(error)}")
@@ -166,8 +166,8 @@ async def handle_image(client, message):
 
 @app.on_message(filters.command("tagall"))
 async def handle_tagall(client, message):
-    if not await User.get_admin(message):
-        return await Handler.send_large_output(message, "**Maaf, perintah ini hanya untuk admin. 😎**")
+    if not await Extract.getAdmin(message):
+        return await Handler().sendLongPres(message, "**Maaf, perintah ini hanya untuk admin. 😎**")
 
     msg = await message.reply("Sabar ya, tunggu bentar...", quote=True)
 
@@ -189,19 +189,19 @@ async def handle_tagall(client, message):
         if message.chat.id not in chat_tagged:
             break
         try:
-            await m.reply(f"{Handler.get_arg(message)}\n\n{' '.join(output)}", quote=bool(message.reply_to_message))
+            await m.reply(f"{Extract().getArg(message)}\n\n{' '.join(output)}", quote=bool(message.reply_to_message))
             await asyncio.sleep(3)
             count.extend(output)
         except FloodWait as e:
             await asyncio.sleep(e.value)
-            await m.reply(f"{Handler.get_arg(message)}\n\n{' '.join(output)}", quote=bool(message.reply_to_message))
+            await m.reply(f"{Extract().getArg(message)}\n\n{' '.join(output)}", quote=bool(message.reply_to_message))
             await asyncio.sleep(3)
             count.extend(output)
 
-    end_time = round(time() - start_time, 2)
+    end_time = Extract().getTime(time() - start_time))
     await msg.delete()
     logger.get_logger(__name__).info(f"Tagall completed: {message.chat.id}")
-    await Handler.send_large_output(
+    await Handler().sendLongPres(
         message,
         f"<b>✅ <code>{len(count)}</code> anggota berhasil di-tag\n⌛️ Waktu yang dibutuhkan: <code>{end_time}</code> detik</b>",
     )
@@ -214,14 +214,14 @@ async def handle_tagall(client, message):
 
 @app.on_message(filters.command("cancel"))
 async def handle_cancel(client, message):
-    if not await User.get_admin(message):
-        return await Handler.send_large_output(message, "**Maaf, perintah ini hanya untuk admin. 😎**")
+    if not await Extract().getAdmin(message):
+        return await Handler().sendLongPres(message, "**Maaf, perintah ini hanya untuk admin. 😎**")
 
     if message.chat.id not in chat_tagged:
         return await message.delete()
     chat_tagged.remove(message.chat.id)
     logger.get_logger(__name__).info(f"Tagall cancel: {message.chat.id}")
-    return await Handler.send_large_output(message, "**TagAll berhasil dibatalkan**")
+    return await Handler().sendLongPres(message, "**TagAll berhasil dibatalkan**")
 
 
 app.run()
