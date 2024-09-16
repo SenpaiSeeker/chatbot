@@ -5,7 +5,7 @@ import sys
 from time import time
 
 from dotenv import load_dotenv
-from mytools import Api, Button, Handler, ImageGen, LoggerHandler, Translate, Extract, BinaryEncryptor
+from mytools import Api, BinaryEncryptor, Button, Extract, Handler, ImageGen, LoggerHandler, Translate
 from pyrogram import Client, emoji, filters
 from pyrogram.enums import ChatAction
 from pyrogram.errors import FloodWait
@@ -59,7 +59,7 @@ async def handle_tts(client, message):
 
     code = binary.encrypt(text) if cmd == "bencode" else binary.encrypt(text)
     await msg.delete()
-    return await  Handler().sendLongPres(message, code)
+    return await Handler().sendLongPres(message, code)
 
 
 @app.on_message(filters.command("chatbot"))
