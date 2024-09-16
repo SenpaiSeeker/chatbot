@@ -57,7 +57,7 @@ async def handle_encrypt(client, message):
     if not text:
         return await msg.edit(f"{message.text.split()[0]} balas ke text atau ketik sesuatu")
 
-    code = binary.encrypt(text) if cmd == "bencode" else binary.encrypt(text)
+    code = binary.encrypt(text) if cmd == "bencode" else binary.decrypt(text)
     await msg.delete()
     return await Handler().sendLongPres(message, code)
 
