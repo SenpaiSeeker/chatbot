@@ -134,7 +134,7 @@ async def handle_khodam(client, message):
     msg = await message.reply("**Sedang memproses....**")
 
     try:
-        user = await Extract().getRid(message)
+        user = await Extract().getId(message)
         if not user:
             return await msg.edit("**harap berikan username atau reply ke pengguna untuk dicek khodam nya**")
         get_name = await client.get_users(user)
