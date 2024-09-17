@@ -25,9 +25,8 @@ DEV_NAME = os.getenv("DEV_NAME")
 app = Client(name=BOT_TOKEN.split(":")[0], api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
 chatbot_enabled, chat_tagged = {}, []
-chatbot = Api(name=BOT_NAME, dev=DEV_NAME)
+my_api = Api(name=BOT_NAME, dev=DEV_NAME)
 trans = Translate()
-khodam = Api(name=BOT_NAME, dev=DEV_NAME, is_khodam=True)
 binary = BinaryEncryptor()
 
 
@@ -88,7 +87,7 @@ async def handle_clear_message(client, message):
     filters.text
     & ~filters.bot
     & ~filters.me
-    & ~filters.command(["start", "chatbot", "image", "tagall", "cancel", "clear", "khodam", "tts"])
+    & ~filters.command(["start", "chatbot", "image", "tagall", "cancel", "clear", "khodam", "tts", "bencode", "bdecode"])
 )
 async def handle_message(client, message):
     if not chatbot_enabled.get(message.from_user.id, False):
@@ -100,7 +99,7 @@ async def handle_message(client, message):
     await client.send_chat_action(chat_id=message.chat.id, action=ChatAction.TYPING)
 
     try:
-        result = chatbot.ChatBot(user_message, message.from_user.id)
+        result = my_api.ChatBot(user_message, message.from_user.id)
         logger.get_logger(__name__).info("Mengirim output besar ke pengguna")
         await Handler().sendLongPres(message, result)
     except Exception as e:
@@ -144,7 +143,7 @@ async def handle_khodam(client, message):
     logger.get_logger(__name__).info(f"Permintaan mengecek khodam: {full_name}")
 
     try:
-        result = khodam.KhodamCheck(full_name)
+        result = my_api.KhodamCheck(full_name)
         await Handler().sendLongPres(message, result)
         await msg.delete()
         logger.get_logger(__name__).info(f"Berhasil mendapatkan info khodam: {full_name}")
