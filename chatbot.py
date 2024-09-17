@@ -212,7 +212,7 @@ async def handle_tagall(client, message):
             await asyncio.sleep(3)
             count.extend(output)
 
-    end_time = await Handler().getTime(time() - start_time)
+    end_time = Handler().getTime(time() - start_time)
     await msg.delete()
     logger.get_logger(__name__).info(f"Tagall completed: {message.chat.id}")
     await Handler().sendLongPres(
