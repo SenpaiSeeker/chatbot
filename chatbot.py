@@ -125,7 +125,7 @@ async def handle_tts(client, message):
             os.remove(result)
         else:
             result = trans.ConvertLang(text)
-            await Handler.sendLongPres(message, result)
+            await Handler().sendLongPres(message, result)
 
         logger.get_logger(__name__).info(f"Berhasil mengirimkan {command} ke user ID {message.from_user.id}")
         await msg.delete()
