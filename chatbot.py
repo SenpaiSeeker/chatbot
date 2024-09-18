@@ -113,7 +113,7 @@ async def handle_tts(client, message):
     text = Handler().getArg(message)
 
     if not text:
-        return await msg.edit(f"{message.text.split(][0]} (replyText/typingText)")
+        return await msg.edit(f"{message.text.split()[0]} (replyText/typingText)")
 
     command = message.command[0].upper()
     logger.get_logger(__name__).info(f"Menerima permintaan {command} dari user ID {message.from_user.id}")
