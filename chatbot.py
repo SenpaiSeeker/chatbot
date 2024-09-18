@@ -82,12 +82,12 @@ async def handle_clear_message(client, message):
     clear = my_api.clear_chat_history(message.from_user.id)
     await message.reply(clear)
 
-
+    
 @app.on_message(
     filters.text
     & ~filters.bot
     & ~filters.me
-    & ~filters.command(["start", "chatbot", "image", "tagall", "cancel", "clear", "khodam", "tts", "bencode", "bdecode"])
+    & ~filters.command(["start", "chatbot", "image", "tagall", "cancel", "clear", "khodam", "tts", "tr", "bencode", "bdecode"])
 )
 async def handle_message(client, message):
     if not chatbot_enabled.get(message.from_user.id, False):
