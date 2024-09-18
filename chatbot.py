@@ -107,25 +107,31 @@ async def handle_message(client, message):
         logger.get_logger(__name__).error(f"Terjadi kesalahan: {str(e)}")
 
 
-@app.on_message(filters.command("tts"))
+@app.on_message(filters.command(["tts", "tr"]))
 async def handle_tts(client, message):
     msg = await message.reply("**Tunggu bentar ya...**")
-
     text = Handler().getArg(message)
-    if not text:
-        return await msg.edit("/tts (replyText/typingText)")
 
-    logger.get_logger(__name__).info(f"Menerima permintaan TTS dari user ID {message.from_user.id}")
+    if not text:
+        return await msg.edit(f"{message.text.split(][0]} (replyText/typingText)")
+
+    command = message.command[0].upper()
+    logger.get_logger(__name__).info(f"Menerima permintaan {command} dari user ID {message.from_user.id}")
 
     try:
-        tts = trans.TextToSpeech(text)
-        await message.reply_voice(tts)
-        os.remove(tts)
-        logger.get_logger(__name__).info(f"Berhasil mengirimkan TTS ke user ID {message.from_user.id}")
+        if command == "TTS":
+            result = trans.TextToSpeech(text)
+            await message.reply_voice(result)
+            os.remove(result)
+        else:
+            result = trans.ConvertLang(text)
+            await Handler.sendLongPres(message, result)
+
+        logger.get_logger(__name__).info(f"Berhasil mengirimkan {command} ke user ID {message.from_user.id}")
         await msg.delete()
     except Exception as e:
-        logger.get_logger(__name__).error(f"Error generating TTS: {e}")
-        return await msg.edit(f"Error: {str(e)}")
+        logger.get_logger(__name__).error(f"Error generating {command}: {e}")
+        await msg.edit(f"Error: {str(e)}")
 
 
 @app.on_message(filters.command("khodam"))
@@ -178,16 +184,21 @@ async def handle_image(client, message):
         return await msg.edit(error)
 
 
-@app.on_message(filters.command("tagall"))
-async def handle_tagall(client, message):
+@app.on_message(filters.command(["tagall", "cancel"]))
+async def handle_tagall_or_cancel(client, message):
     if not await Extract().getAdmin(message):
         return await Handler().sendLongPres(message, "**Maaf, perintah ini hanya untuk admin. 😎**")
 
-    msg = await message.reply("Sabar ya, tunggu bentar...", quote=True)
+    if message.command[0] == "cancel":
+        if message.chat.id not in chat_tagged:
+            return await message.delete()
+        chat_tagged.remove(message.chat.id)
+        logger.get_logger(__name__).info(f"Tagall cancel: {message.chat.id}")
+        return await Handler().sendLongPres(message, "**TagAll berhasil dibatalkan**")
 
+    msg = await message.reply("Sabar ya, tunggu bentar...", quote=True)
     start_time = time()
     chat_tagged.append(message.chat.id)
-
     logger.get_logger(__name__).info(f"Tagall started: {message.chat.id}")
 
     emoji_list = [value for key, value in emoji.__dict__.items() if not key.startswith("__")]
@@ -224,18 +235,6 @@ async def handle_tagall(client, message):
         chat_tagged.remove(message.chat.id)
     except ValueError:
         pass
-
-
-@app.on_message(filters.command("cancel"))
-async def handle_cancel(client, message):
-    if not await Extract().getAdmin(message):
-        return await Handler().sendLongPres(message, "**Maaf, perintah ini hanya untuk admin. 😎**")
-
-    if message.chat.id not in chat_tagged:
-        return await message.delete()
-    chat_tagged.remove(message.chat.id)
-    logger.get_logger(__name__).info(f"Tagall cancel: {message.chat.id}")
-    return await Handler().sendLongPres(message, "**TagAll berhasil dibatalkan**")
 
 
 app.run()
