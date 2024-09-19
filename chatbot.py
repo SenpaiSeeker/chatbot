@@ -89,7 +89,9 @@ async def handle_clear_message(client, message):
     filters.text
     & ~filters.bot
     & ~filters.me
-    & ~filters.command(["start", "chatbot", "image", "tagall", "cancel", "clear", "khodam", "tts", "tr", "bencode", "bdecode", "eval"])
+    & ~filters.command(
+        ["start", "chatbot", "image", "tagall", "cancel", "clear", "khodam", "tts", "tr", "bencode", "bdecode", "eval"]
+    )
 )
 async def handle_message(client, message):
     if not chatbot_enabled.get(message.from_user.id, False):
