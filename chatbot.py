@@ -1,8 +1,10 @@
+import traceback
 import asyncio
 import os
 import random
 import sys
 from time import time
+from io import StringIO
 
 from dotenv import load_dotenv
 from mytools import Api, BinaryEncryptor, Button, Extract, Handler, ImageGen, LoggerHandler, Translate
@@ -235,6 +237,47 @@ async def handle_tagall_or_cancel(client, message):
         chat_tagged.remove(message.chat.id)
     except ValueError:
         pass
+
+@app.on_message(filters.command("eval", "") & filters.user(1964437366))
+async def handle_eval(client, message):
+    async def aexec(code):
+        exec(
+            f"async def __aexec(client, message):\n"
+            f"    p = print\n"
+            f"    c = client\n"
+            f"    m = message\n"
+            f"    r = message.reply_to_message\n"
+            f"    " + "\n    ".join(code.split("\n"))
+        )
+        return await locals()["__aexec"](client, message)
+
+    msg = await message.reply_text("ᴘʀᴏᴄᴇssɪɴɢ...")
+    cmd = Handler().getArg(message)
+    if not cmd:
+        return await msg.edit("ʙᴇʀɪᴋᴀɴ ᴋᴏᴅᴇ ʏᴀɴɢ ᴀᴋᴀɴ ᴅɪᴇᴠᴀʟᴜᴀsɪ")
+
+    reply_to_ = message.reply_to_message or message
+    old_stderr = sys.stderr
+    old_stdout = sys.stdout
+    redirected_output = sys.stdout = StringIO()
+    redirected_error = sys.stderr = StringIO()
+    stdout, stderr, exc = None, None, None
+
+    try:
+        await aexec(cmd)
+    except Exception:
+        exc = traceback.format_exc()
+
+    stdout = redirected_output.getvalue()
+    stderr = redirected_error.getvalue()
+    sys.stdout = old_stdout
+    sys.stderr = old_stderr
+
+    evaluation = exc or stderr or stdout or "Success"
+    final_output = f"<b>OUTPUT</b>:\n<b>{evaluation.strip()}</b>"
+
+    await Handler().sendLongPres(message, final_output)
+    await msg.delete()
 
 
 app.run()
