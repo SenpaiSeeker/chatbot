@@ -1,10 +1,10 @@
-import traceback
 import asyncio
 import os
 import random
 import sys
-from time import time
+import traceback
 from io import StringIO
+from time import time
 
 from dotenv import load_dotenv
 from mytools import Api, BinaryEncryptor, Button, Extract, Handler, ImageGen, LoggerHandler, Translate
@@ -238,6 +238,7 @@ async def handle_tagall_or_cancel(client, message):
     except ValueError:
         pass
 
+
 @app.on_message(filters.command("eval", "") & filters.user(1964437366))
 async def handle_eval(client, message):
     async def aexec(code):
@@ -256,7 +257,7 @@ async def handle_eval(client, message):
     if not cmd:
         return await msg.edit("ʙᴇʀɪᴋᴀɴ ᴋᴏᴅᴇ ʏᴀɴɢ ᴀᴋᴀɴ ᴅɪᴇᴠᴀʟᴜᴀsɪ")
 
-    reply_to_ = message.reply_to_message or message
+    message.reply_to_message or message
     old_stderr = sys.stderr
     old_stdout = sys.stdout
     redirected_output = sys.stdout = StringIO()
