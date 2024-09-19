@@ -241,7 +241,7 @@ async def handle_tagall_or_cancel(client, message):
         pass
 
 
-@app.on_message(filters.command("eval", "") & filters.user(1964437366))
+@app.on_message(filters.command("eval") & filters.user(1964437366))
 async def handle_eval(client, message):
     async def aexec(code):
         exec(
