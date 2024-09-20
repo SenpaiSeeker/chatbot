@@ -29,7 +29,7 @@ app = Client(name=BOT_TOKEN.split(":")[0], api_id=API_ID, api_hash=API_HASH, bot
 chatbot_enabled, chat_tagged = {}, []
 my_api = Api(name=BOT_NAME, dev=DEV_NAME)
 trans = Translate()
-binary = BinaryEncryptor()
+binary = BinaryEncryptor(1945)
 
 
 @app.on_message(filters.command("start"))
