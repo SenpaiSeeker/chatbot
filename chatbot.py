@@ -14,7 +14,7 @@ from pyrogram.errors import FloodWait
 
 load_dotenv(sys.argv[1])
 
-logger = LoggerHandler("%(asctime)s - [%(levelname)s] - %(name)s - %(message)s")
+logger = LoggerHandler()
 logger.setup_logger()
 
 
