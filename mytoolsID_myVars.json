@@ -1,0 +1,11 @@
+{
+    "12345": {
+        "variabel": {
+            "testQuery": "someValue",
+            "testList": [
+                "item1",
+                "item2"
+            ]
+        }
+    }
+}
