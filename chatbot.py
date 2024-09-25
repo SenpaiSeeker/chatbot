@@ -103,7 +103,7 @@ async def handle_message(client, message):
     await client.send_chat_action(chat_id=message.chat.id, action=ChatAction.TYPING)
 
     try:
-        result = my_api.ChatBot(user_message, message.from_user.id)
+        result = my_api.ChatBot(user_message, message.from_user.id, Extract().getMention(message.from_user))
         logger.get_logger(__name__).info("Mengirim output besar ke pengguna")
         await Handler().sendLongPres(message, result)
     except Exception as e:
