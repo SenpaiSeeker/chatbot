@@ -97,13 +97,12 @@ async def handle_message(client, message):
     if not chatbot_enabled.get(message.from_user.id, False):
         return
 
-    user_message = Handler().getMsg(message, is_chatbot=True)
     logger.get_logger(__name__).info(f"Menerima pesan dari pengguna dengan ID: {message.from_user.id}")
 
     await client.send_chat_action(chat_id=message.chat.id, action=ChatAction.TYPING)
 
     try:
-        result = my_api.ChatBot(user_message, message.from_user.id, Extract().getMention(message.from_user))
+        result = my_api.ChatBot(message)
         logger.get_logger(__name__).info("Mengirim output besar ke pengguna")
         await Handler().sendLongPres(message, result)
     except Exception as e:
