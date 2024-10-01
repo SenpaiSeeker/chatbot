@@ -1,16 +1,10 @@
-import asyncio
 import os
-import random
 import sys
-import traceback
-from io import StringIO
-from time import time
 
 from dotenv import load_dotenv
-from mytools import Api, BinaryEncryptor, Button, Extract, Handler, ImageGen, LoggerHandler, Translate
-from pyrogram import Client, emoji, filters
+from mytools import Api, Button, Extract, Handler, ImageGen, LoggerHandler
+from pyrogram import Client, filters
 from pyrogram.enums import ChatAction
-from pyrogram.errors import FloodWait
 
 load_dotenv(sys.argv[1])
 
@@ -29,6 +23,7 @@ app = Client(name=BOT_TOKEN.split(":")[0], api_id=API_ID, api_hash=API_HASH, bot
 chatbot_enabled, chat_tagged = {}, []
 my_api = Api(name=BOT_NAME, dev=DEV_NAME)
 
+
 @app.on_message(filters.command("start"))
 async def start(client, message):
     user = message.from_user
@@ -44,7 +39,6 @@ async def start(client, message):
         reply_markup=reply_markup,
     )
     logger.get_logger(__name__).info("Mengirim pesan selamat datang")
-
 
 
 @app.on_message(filters.command("chatbot"))
@@ -69,12 +63,7 @@ async def handle_clear_message(client, message):
     await message.reply(clear)
 
 
-@app.on_message(
-    filters.text
-    & ~filters.bot
-    & ~filters.me
-    & ~filters.command(["start", "chatbot", "image",  "clear", "khodam"])
-)
+@app.on_message(filters.text & ~filters.bot & ~filters.me & ~filters.command(["start", "chatbot", "image", "clear", "khodam"]))
 async def handle_message(client, message):
     if not chatbot_enabled.get(message.from_user.id, False):
         return
@@ -90,7 +79,6 @@ async def handle_message(client, message):
     except Exception as e:
         await Handler().sendLongPres(message, f"Terjadi kesalahan: {str(e)}")
         logger.get_logger(__name__).error(f"Terjadi kesalahan: {str(e)}")
-
 
 
 @app.on_message(filters.command("khodam"))
