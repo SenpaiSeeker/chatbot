@@ -103,7 +103,7 @@ async def handle_khodam(client, message):
     except Exception as e:
         await Handler().sendLongPres(message, str(e))
         await msg.delete()
-        logger.get_logger(__name__).error({str(e))
+        logger.get_logger(__name__).error(str(e))
 
 
 @app.on_message(filters.command("image"))
