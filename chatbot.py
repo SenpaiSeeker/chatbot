@@ -21,7 +21,7 @@ DEV_NAME = os.getenv("DEV_NAME")
 app = Client(name=BOT_TOKEN.split(":")[0], api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
 chatbot_enabled, chat_tagged = {}, []
-my_api = Api(name=BOT_NAME, dev=DEV_NAME)
+my_api, genBingAi = Api(name=BOT_NAME, dev=DEV_NAME), ImageGen()
 
 
 @app.on_message(filters.command("start"))
@@ -59,7 +59,7 @@ async def handle_chatbot(client, message):
 
 @app.on_message(filters.command("clear"))
 async def handle_clear_message(client, message):
-    clear = my_api.clear_chat_history(message.from_user.id)
+    clear = my_api.clear_chat_history(message)
     await message.reply(clear)
 
 
@@ -77,8 +77,8 @@ async def handle_message(client, message):
         logger.get_logger(__name__).info("Mengirim output besar ke pengguna")
         await Handler().sendLongPres(message, result)
     except Exception as e:
-        await Handler().sendLongPres(message, f"Terjadi kesalahan: {str(e)}")
-        logger.get_logger(__name__).error(f"Terjadi kesalahan: {str(e)}")
+        await Handler().sendLongPres(message, str(e))
+        logger.get_logger(__name__).error(str(e))
 
 
 @app.on_message(filters.command("khodam"))
@@ -101,15 +101,14 @@ async def handle_khodam(client, message):
         await msg.delete()
         logger.get_logger(__name__).info(f"Berhasil mendapatkan info khodam: {full_name}")
     except Exception as e:
-        await Handler().sendLongPres(message, f"Terjadi kesalahan: {str(e)}")
+        await Handler().sendLongPres(message, str(e))
         await msg.delete()
-        logger.get_logger(__name__).error(f"Terjadi kesalahan: {str(e)}")
+        logger.get_logger(__name__).error({str(e))
 
 
 @app.on_message(filters.command("image"))
 async def handle_image(client, message):
     msg = await message.reply("**Silahkan tunggu sebentar...**")
-    genBingAi = ImageGen()
 
     prompt = Handler().getArg(message)
     if not prompt:
@@ -119,8 +118,8 @@ async def handle_image(client, message):
     try:
         result = await genBingAi.generate_image(prompt)
     except Exception as error:
-        logger.get_logger(__name__).error(f"Terjadi kesalahan: {str(error)}")
-        return await msg.edit(f"Error: {str(error)}")
+        logger.get_logger(__name__).error(str(error))
+        return await msg.edit(str(error))
 
     try:
         await message.reply_media_group(result)
